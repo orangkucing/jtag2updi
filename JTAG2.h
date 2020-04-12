@@ -152,6 +152,4 @@ namespace JTAG2 {
 	void erase();
 }
 
-
-
 #endif /* STK_H_ */

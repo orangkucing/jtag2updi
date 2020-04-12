@@ -5,7 +5,6 @@
  *  Author: JMR_2
  */ 
 
-
 #ifndef JICE_IO_H_
 #define JICE_IO_H_
 
