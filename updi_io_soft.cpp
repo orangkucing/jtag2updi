@@ -4,7 +4,6 @@
    Created: 11-08-2018 22:08:14
     Author: Cristian Balint <cristian dot balint at gmail dot com>
 */
-#error "wtf!"
 #ifdef __AVR_ATmega16__
 
 // Includes
