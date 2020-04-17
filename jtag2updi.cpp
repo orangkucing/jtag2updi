@@ -8,9 +8,10 @@
 // Includes
 #include <util/delay.h>
 #include <avr/io.h>
+#include "sys.h"
 #include "updi_io.h"
 #include "UPDI_lo_lvl.h"
-#include "sys.h"
+#include "UPDI_hi_lvl.h"
 #include "JICE_io.h"
 #include "JTAG2.h"
 
@@ -41,8 +42,6 @@ inline void setup() {
 inline void loop() {
   int progmode_count = 0;
   bool programming = false;
-  uint8_t fuse5 = 0;
-  uint8_t f5val = 0;
 
   SYS::setPOWER();
   _delay_us(10);
@@ -86,32 +85,19 @@ inline void loop() {
     switch (JTAG2::packet.body[0]) {
       case JTAG2::CMND_GET_SIGN_ON:
 
-        if (hvMode > 200) {   // if UDPI=GPIO, power-cycle target
+        if (hvMode > 200) {   // if UDPI as GPIO, power-cycle target
           SYS::clearPOWER();
           _delay_us(10000);
           SYS::setPOWER();
           _delay_us(2000);    // allow 2ms power switch turn-on time
         }
-        // -----------------------------start HV programming sequence (8.8ms max)-------------------------------
-        if (hvMode > 100) {     // if UDPI=GPIO or RESET, run HV enable sequence
-          SYS::setPULSE();
-          _delay_us(550);     // HV pulse duration (allowable range = 100-1000µs)
-          SYS::clearPULSE();
-          _delay_us(4);       // tri-state (turn off) the HV pulse for 4µs (allowable range = 1-10µs)
-          TCCR0A = 0;
-          DDRD |= (1 << DDD6);   // tx enable
-          for (uint16_t i = 0; i < 2; i++) {  // send double break, 78µs x 2 = 156µs (max
-            PORTD &= ~(1 << DDD6);
-            _delay_us(6 * 12);     // low 12 cycle
-            PORTD |=  (1 << DDD6);
-            _delay_us(6);          // high 1 cycle
-          }
-          DDRD &= ~(1 << DDD6);    // RX enable
-          TCCR0A = (1 << COM0A1) | (1 << COM0A0) | (1 << WGM01);  // setup bit high
-          _delay_us(1000);         // Debugger.txd = z (allowable range = 200-14000µs)
+        // -----------start HV programming sequence (8.8ms max)---------
+        if (hvMode > 100) {   // if UDPI as GPIO or RESET
+          SYS::pulseHV();
+          SYS::double_breakHV();
           UPDI_io::put(UPDI::SYNCH);
-          _delay_us(1000);
-        } // -------------------------------end HV programming sequence---------------------------------
+          _delay_us(100);
+        } // ---------end HV programming sequence-----------------------
 
         JTAG2::sign_on();
         break;

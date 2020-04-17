@@ -7,6 +7,8 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/power.h>
+#include <util/delay.h>
 
 #include "sys.h"
 
@@ -16,6 +18,13 @@
 #ifndef LED_PIN
 #define LED_PIN 5
 #endif
+#ifndef HV_PORT
+#define HV_PORT B
+#endif
+#ifndef HV_PIN
+#define HV_PIN 4
+#endif
+
 
 void SYS::init(void) {
 
@@ -25,9 +34,9 @@ void SYS::init(void) {
   DIDR0 = 0x3F;
   /* Enable all port D pull-ups */
   PORTD = 0xFF;
-  /* Enable all port B pull-ups, except for LED and PULSE */
+  /* Enable all port B pull-ups, except for LED and HV */
   PORT(LED_PORT) = 0b11001111;
-  /* Enable both LED and PULSE as outputs */
+  /* Enable both LED and HV as outputs */
   DDR(LED_PORT) |= 0b00110000;
 
   /* Disable unused peripherals */
@@ -46,9 +55,9 @@ void SYS::init(void) {
 
   /* Enable all port D pull-ups */
   PORT(UPDI_PORT) = 0xFF;
-  /* Enable all port B pull-ups, except for LED and PULSE */
+  /* Enable all port B pull-ups, except for LED and HV */
   PORT(LED_PORT) = 0b11001111;
-  /* Enable both LED and PULSE as outputs */
+  /* Enable both LED and HV as outputs */
   DDR(LED_PORT) |= 0b00110000;
 
   /* Disable unused peripherals */
@@ -70,19 +79,33 @@ void SYS::init(void) {
 }
 /* LED continuously on for during upload, blinks for OVL indication */
 void SYS::setLED(void) {
-  PORT(LED_PORT) |= 0b00100000;
+  PORT(LED_PORT) |= 1 << LED_PIN;
 }
 
 void SYS::clearLED(void) {
-  PORT(LED_PORT) &= 0b11011111;
+  PORT(LED_PORT) &= ~(1 << LED_PIN);
 }
 
-void SYS::setPULSE(void) {
-  PORT(LED_PORT) |= 0b00010000;  // 12V pulse enable
+void SYS::pulseHV(void) {
+  PORT(HV_PORT) |= 1 << HV_PIN;     // set HV
+  _delay_us(250);                   // duration (allowable range = 100-1000µs)
+  PORT(HV_PORT) &= ~(1 << HV_PIN);  // clear HV
+  _delay_us(3);                     // delay (allowable range = 1-10µs)
 }
 
-void SYS::clearPULSE(void) {
-  PORT(LED_PORT) &= 0b11101111;  // 12V pulse disable
+void SYS::double_breakHV(void) {
+  _delay_us(3);
+  TCCR0A = 0;
+  DDRD |= (1 << DDD6);   // tx enable
+  for (uint16_t i = 0; i < 2; i++) {  // send double break, 78µs x 2 = 156µs (max
+    PORTD &= ~(1 << DDD6);
+    _delay_us(6 * 12);     // low 12 cycle
+    PORTD |=  (1 << DDD6);
+    _delay_us(6);          // high 1 cycle
+  }
+  DDRD &= ~(1 << DDD6);    // RX enable
+  TCCR0A = (1 << COM0A1) | (1 << COM0A0) | (1 << WGM01);  // setup bit high
+  _delay_us(800);         // Debugger.txd = z (allowable range = 200-14000µs)
 }
 
 void SYS::setPOWER(void) {

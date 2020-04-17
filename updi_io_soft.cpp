@@ -4,20 +4,21 @@
    Created: 11-08-2018 22:08:14
     Author: Cristian Balint <cristian dot balint at gmail dot com>
 */
+
 #ifdef __AVR_ATmega16__
 
-// Includes
-#include <avr/io.h>
-#include <util/delay.h>
-
+// Includes (note: sys.h defines F_CPU, so it should be included before util/delay.h)
 #include "sys.h"
 #include "updi_io.h"
+
+#include <avr/io.h>
+#include <util/delay.h>
 
 // Defines
 #ifndef F_CPU
 #  define F_CPU 16000000U
 #endif
-#ifndef UPDI_BAUD
+#ifndef 
 #  define UPDI_BAUD 225000U  // (max 225000 min approx. F_CPU/100)
 #endif
 

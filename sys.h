@@ -8,6 +8,8 @@
 #ifndef SYS_H_
 #define SYS_H_
 
+#include<avr/io.h>
+
 // Auxiliary Macros
 #define CONCAT(A,B) A##B
 #define PIN(x) CONCAT(PIN,x)
@@ -50,8 +52,8 @@ namespace SYS {
 void init(void);
 void setLED(void);
 void clearLED(void);
-void setPULSE(void);
-void clearPULSE(void);
+void pulseHV(void);
+void double_breakHV(void);
 void setPOWER(void);
 void clearPOWER(void);
 }
