@@ -9,7 +9,6 @@
 #ifndef JTAG2_H_
 #define JTAG2_H_
 
-#include <stdint.h>
 #include "sys.h"
 
 namespace JTAG2 {
@@ -68,6 +67,7 @@ namespace JTAG2 {
 		RSP_OK						= 0x80,
 		RSP_PARAMETER				= 0x81,
 		RSP_MEMORY					= 0x82,
+		RSP_SIGN_ON					= 0x86,
 		// Error
 		RSP_FAILED					= 0xA0,
 		RSP_ILLEGAL_PARAMETER		= 0xA1,
@@ -106,7 +106,7 @@ namespace JTAG2 {
 	
 	// *** STK500 packet *** 
 	constexpr uint8_t MESSAGE_START = 0x1B;
-	constexpr int MAX_BODY_SIZE = 450;				// Note: should not be reduced to less than 300 bytes.
+	constexpr int MAX_BODY_SIZE = 700;				// Note: should not be reduced to less than 300 bytes.
 	union packet_t {
 		uint8_t raw[6 + MAX_BODY_SIZE];
 		struct {
@@ -124,8 +124,6 @@ namespace JTAG2 {
 	} extern packet;
 	constexpr uint8_t TOKEN = 0x0E;
 	
-	//  *** Signature response ***
-	extern FLASH<uint8_t> sgn_resp[29];
 	// *** Parameter initialization ***
 	void init();
 
