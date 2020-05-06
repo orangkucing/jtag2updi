@@ -1,11 +1,10 @@
 /*
-   updi_io_soft.cpp
+ * updi_io_soft.cpp
+ *
+ * Created: 11-08-2018 22:08:14
+ *  Author: Cristian Balint <cristian dot balint at gmail dot com>
+ */
 
-   Created: 11-08-2018 22:08:14
-    Author: Cristian Balint <cristian dot balint at gmail dot com>
-*/
-
-#ifdef __AVR_ATmega16__
 
 // Includes (note: sys.h defines F_CPU, so it should be included before util/delay.h)
 #include "sys.h"
@@ -14,233 +13,190 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-// Defines
-#ifndef F_CPU
-#  define F_CPU 16000000U
-#endif
-#ifndef 
-#  define UPDI_BAUD 225000U  // (max 225000 min approx. F_CPU/100)
-#endif
+#if UPDI_IO_TYPE == 2
 
-// Cycle timing
-#define TXDELAY (uint8_t)(((F_CPU/UPDI_BAUD) - 9) / 3)
-#define RXDELAY (uint8_t)(((F_CPU/UPDI_BAUD) - 9) / 3)
-#define RXHALFD (uint8_t)  (RXDELAY / 2)
+// Cycle timing (convert to float and add 0.5 to achieve round to nearest instead of truncate)
+#define BITTIME (uint8_t) ( ((1.0 * F_CPU)/UPDI_BAUD) / 3 + 0.5 )
 
 // Check
-#if ( (((F_CPU/UPDI_BAUD) - 9) / 3) > 254 )
+#if ( (2 * (F_CPU/UPDI_BAUD) / 3) > 254 )
 # error Low baud rates are not supported - use higher UPDI_BAUD
 #endif
+
+#define ASM_MACROS \
+        ".ifndef delay_macros                           \n"\
+        ".set delay_macros, 1                           \n"\
+                                                        \
+        /* Delays 3n cycles, preserves carry flag */    \
+        ".macro delay n                                 \n"\
+        " ldi r18, \\n                                  \n"\
+        "0:                                             \n"\
+        " dec r18                                       \n"\
+        " brne 0b                                       \n"\
+        ".endm                                          \n"\
+                                                        \
+        /* Delays 3n cycles, clears carry flag */       \
+        ".macro delay_cc n                              \n"\
+        " ldi r18, \\n                                  \n"\
+        "0:                                             \n"\
+        " subi r18, 1                                   \n"\
+        " brne 0b                                       \n"\
+        ".endm                                          \n"\
+                                                        \
+        ".endif                                         \n"
 
 // Functions
 /* Sends regular characters through the UPDI link */
 uint8_t UPDI_io::get() {
 
-  // rx input
-  DDR(UPDI_PORT)  &= ~(1 << UPDI_PIN);
-  // no pullup
-  PORT(UPDI_PORT) &= ~(1 << UPDI_PIN);
+        // rx input
+        DDR(UPDI_PORT)  &= ~(1 << UPDI_PIN);
+        // no pullup
+        PORT(UPDI_PORT) &= ~(1 << UPDI_PIN);
 
-  uint8_t c;
+        uint8_t c;
 
-  __asm volatile
-  (
-    " ldi  %0, 0 \n\t"           // init
-    " ldi r20, 8 \n\t"           // 8 bits
-    " ldi r19, 3 \n\t"           // 1 parity + 2 stop bits
+        __asm volatile
+        (
+            ASM_MACROS
+            " ldi  %0, 128 \n\t"                            // variable will receive return data, doubles as counter
 
-    // wait for start edge
-    "WaitStart: \n\t"
-    " sbic %[uart_port], %[uart_pin] \n\t"
-    " rjmp WaitStart \n\t"
+            // wait for start edge
+            "WaitStart: \n\t"
+            " sbic %[uart_port], %[uart_pin] \n\t"
+            " rjmp WaitStart \n\t"
 
-    // skew into middle of edge
-    " ldi r18, %[rxhalfd] \n\t"  // 0.5 bit cycle delay
-    "HBitDelay: \n\t"
-    " dec r18 \n\t"
-    " brne HBitDelay \n\t"
+            // skew into middle of first data bit
+            " delay_cc %[rxdelay] + %[rxdelay] /2 \n\t"     // 1.5 bit cycle delay and leave carry = 0 for next loop
 
-    // 8 bits
-    "RxBLoop: \n\t"
-    " ldi r18, %[rxdelay] \n\t"  // 1 bit cycle delay
-    "RxBDelay: \n\t"
-    " dec r18 \n\t"
-    " brne RxBDelay \n\t"
-    " in r21, %[uart_port] \n\t" // get current bit from serial link
-    " bst r21, %[uart_pin] \n\t" // use T flag
-    " bld r22, 0\n\t"            // to move current data bit
-    " lsr r22 \n\t"              // into carry
-    " ror %0 \n\t"               // accumulate serial data bits into result
-    " dec r20 \n\t"
-    " brne RxBLoop \n\t"
-    " nop \n\t"
+            // 8 bits
+            "RxBLoop: \n\t"
+            " sbic %[uart_port], %[uart_pin] \n\t"          // carry = 0 here; check I/O data
+            " sec \n\t"                                     // if data = 1, set carry
+            " nop \n\t"                                     // correct loop execution time to 6 cycles
+            " delay (%[rxdelay] - 6/3) \n\t"                // 1 bit time delay, minus loop execution time
+            " ror %0 \n\t"                                  // store I/O bit; will set carry when loop ends
+            " brcc RxBLoop \n\t"
 
-    // 1 parity + 2 stop bits
-    "RxSLoop: \n\t"
-    " ldi r18, %[rxdelay] \n\t"  // 1 bit cycle delay
-    "RxSDelay: \n\t"
-    " dec r18 \n\t"
-    " brne RxSDelay \n\t"
-    " in r21, %[uart_port] \n\t" // get current bit from serial link
-    " bst r21, %[uart_pin] \n\t" // use T flag
-    " bld r22, 0\n\t"            // to move current data bit
-    " lsr r22 \n\t"              // into carry
-    " nop \n\t"                  // accumulate serial data bits into result
-    " dec r19 \n\t"
-    " brne RxSLoop \n\t"
-    " nop \n\t"
+            // Wait 1 bit time: skip to centre of 1st stop bit (ignore parity).
+            // The function returns approx 1.5 bit times before the 2nd stop bit completes
+            // to allow burst reads at high UPDI speeds on 8MHz chips.
+            // This time needs to be compensated in the Tx function.
+            " delay %[rxdelay] \n\t"
 
-    : "=r" (c)
-    : [uart_port] "i" (_SFR_IO_ADDR(PIN(UPDI_PORT))),
-    [uart_pin]  "i" (UPDI_PIN),
-    [rxdelay]   "i" (RXDELAY),
-    [rxhalfd]   "i" (RXHALFD)
-    : "r0", "r18", "r19", "r20", "r21", "r22"
-  );
 
-  // re-enable pull up
-  PORT(UPDI_PORT) |= (1 << UPDI_PIN);
+            : "=r" (c)
+            : [uart_port] "i" (_SFR_IO_ADDR(PIN(UPDI_PORT))),
+              [uart_pin]  "i" (UPDI_PIN),
+              [rxdelay]   "i" (BITTIME)
+            : "r18"
+        );
 
-  return c;
+        // re-enable pull up
+        PORT(UPDI_PORT) |= (1 << UPDI_PIN);
+
+        return c;
 }
 
 uint8_t UPDI_io::put(char c) {
 
-  // tx enable
-  DDR(UPDI_PORT) |= (1 << UPDI_PIN);
+        // tx enable
+        DDR(UPDI_PORT) |= (1 << UPDI_PIN);
 
-  __asm volatile
-  (
-    " in r0, %[uart_port] \n\t"  // port state
-    " ldi r26, 2 \n\t"           // 2 bit stop
-    " ldi r27, 8 \n\t"           // 8 bit parity
-    " ldi r28, %[txdelay] \n\t"  // delay counter
-    " ldi r30, 8 \n\t"           // 8 bit loop
+        __asm volatile
+        (
+            ASM_MACROS
+            " in r0, %[uart_port] \n\t"  // port state
+            " ldi r19, 0x78 \n\t"        // High nibble: bits counter (8); Low nibble: parity accumulator
 
-    // pre delay
-    // 2 bit time
-    " mov r29, r28 \n\t"
-    "TxDelay: \n\t"
-    " nop \n\t"
-    " dec r29 \n\t"
-    " brne TxDelay \n\t"
+            // pre delay (stop bits from previous sent byte)
+            // ~2x bit time
+            " delay %[txdelay] + %[txdelay] \n\t"
 
-    // start bit
-    " mov r29, r28 \n\t"
-    "TxDelayS: \n\t"
-    " dec r29 \n\t"
-    " brne TxDelayS \n\t"
-    " bclr 6 \n\t"
-    " bld r0, %[uart_pin] \n\t"
-    " nop \n\t"
-    " nop \n\t"
-    " nop \n\t"
-    " out %[uart_port], r0 \n\t"
-    " nop \n\t"
-    " nop \n\t"
+            // start bit
+            " cbi %[uart_port], %[uart_pin] \n\t"
+            " breq TxLoop \n\t"          // 2 cycle delay to equalize timing
 
-    // 8 bits
-    "TxLoop: \n\t"
-    " mov r29, r28 \n\t"         // load delay counter
-    "TxDelayB: \n\t"             // delay (3 cycle * delayCount) - 1
-    " dec r29 \n\t"
-    " brne TxDelayB \n\t"
-    " bst %[ch], 0 \n\t"         // load bit in T
-    " bld r0, %[uart_pin] \n\t"  // store T bit in r0
-    " ror %[ch] \n\t"            // shift right into carry
-    " sbci r27, 0 \n\t"          // subtract carry (accumulate parity)
-    " dec r30 \n\t"              // decrement bits counter
-    " out %[uart_port], r0 \n\t" // send bit out
-    " brne TxLoop \n\t"          // loop for each bit
-    " nop \n\t"
+            // 8 bits
+            "TxLoop: \n\t"
+            " delay (%[txdelay] - 9/3) \n\t"
+            " bst %[ch], 0 \n\t"         // load bit in T
+            " bld r0, %[uart_pin] \n\t"  // store T bit in r0
+            " ror %[ch] \n\t"            // shift right into carry
+            " sbci r19, 0x10 \n\t"       // subtract carry (accumulate parity) and decrement bits counter
+            " nop \n\t"                  // adjust loop cycle count to 9
+            " bld %[ch], 7 \n\t"         // store data back in bit 7 to leave argument unchanged after the 8 cycles
+            " out %[uart_port], r0 \n\t" // send bit out
+            " brcc TxLoop \n\t"          // loop for each bit
 
-    // parity bit
-    " mov r29, r28 \n\t"
-    "TxDelayP: \n\t"
-    " dec r29 \n\t"
-    " brne TxDelayP \n\t"
-    " bst r27, 0 \n\t"           // extract accumulated parity
-    " bld r0, %[uart_pin] \n\t"
-    " nop \n\t"
-    " nop \n\t"
-    " nop \n\t"
-    " out %[uart_port], r0 \n\t" // send bit out to serial link
-    " nop \n\t"
-    " nop \n\t"
+            // parity bit
+            " delay (%[txdelay] - 3/3) \n\t"
+            " bst r19, 0 \n\t"           // extract accumulated parity
+            " bld r0, %[uart_pin] \n\t"
+            " out %[uart_port], r0 \n\t" // send bit out to serial link
 
-    // stop bits
-    "StopLoop: \n\t"
-    " mov r29, r28 \n\t"
-    "TxDelayStop: \n\t"
-    " dec r29 \n\t"
-    " brne TxDelayStop \n\t"
-    " bset 6 \n\t"
-    " bld r0, %[uart_pin] \n\t"
-    " nop \n\t"
-    " nop \n\t"
-    " dec r26 \n\t"
-    " out %[uart_port], r0 \n\t" // send bit out to serial link
-    " brne StopLoop \n\t"        // loop for each bit
-    " nop \n\t"
+            // stop bits
+            " delay %[txdelay] \n\t"
+            " sbi %[uart_port], %[uart_pin] \n\t" // send bit out to serial link
 
-    :
-    : [uart_port] "i" (_SFR_IO_ADDR(PORT(UPDI_PORT))),
-    [uart_pin]  "i" (UPDI_PIN),
-    [txdelay]   "i" (TXDELAY),
-    [ch]        "r" (c)
-    : "r0", "r26", "r27", "r28", "r29", "r30"
-  );
+            :
+            : [uart_port] "i" (_SFR_IO_ADDR(PORT(UPDI_PORT))),
+              [uart_pin]  "i" (UPDI_PIN),
+              [txdelay]   "i" (BITTIME),
+              [ch]        "r" (c)
+            : "r0","r18","r19"
+        );
 
-  // Ready for RX input
-  DDR(UPDI_PORT) &= ~(1 << UPDI_PIN);
+        // Ready for RX input
+        DDR(UPDI_PORT) &= ~(1 << UPDI_PIN);
 
-  return c;
+        return c;
 }
 
 static inline void send_break() {
 
-  // tx enable
-  DDR(UPDI_PORT) |= (1 << UPDI_PIN);
+        // tx enable
+        DDR(UPDI_PORT) |= (1 << UPDI_PIN);
 
-  //
-  // 13 cycles = 24.60ms
-  //
+        //
+        // 13 cycles = 24.60ms
+        //
 
-  // low 12 cycle
-  PORT(UPDI_PORT) &= ~(1 << UPDI_PIN);
-  _delay_us(2048 * 11);
+        // low 12 cycle
+        PORT(UPDI_PORT) &= ~(1 << UPDI_PIN);
+        _delay_us(2048*11);
 
-  // high 1 cycle
-  PORT(UPDI_PORT) |=  (1 << UPDI_PIN);
-  _delay_us(2048);
+        // high 1 cycle
+        PORT(UPDI_PORT) |=  (1 << UPDI_PIN);
+        _delay_us(2048);
 
-  // RX enable
-  DDR(UPDI_PORT) &= ~(1 << UPDI_PIN);
+        // RX enable
+        DDR(UPDI_PORT) &= ~(1 << UPDI_PIN);
 
-  return;
+        return;
 }
 
 /* Sends special sequences through the UPDI link */
 uint8_t UPDI_io::put(ctrl c) {
 
-  switch (c) {
+        switch (c) {
 
-    case double_break:
-      send_break();
-      send_break();
-      break;
+          case double_break:
+              send_break();
+              send_break();
+              break;
 
-    case single_break:
-      send_break();
-      break;
+          case single_break:
+              send_break();
+              break;
 
-    case enable:
+          case enable:
 
-    default:
-      break;
-  }
+          default:
+              break;
+        }
 
-  return 0;
+        return 0;
 }
 
 void UPDI_io::init(void) {
