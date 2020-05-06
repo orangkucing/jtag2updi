@@ -1,7 +1,7 @@
 # HV UPDI Programmer
-The firmware was downloaded from https://github.com/SpenceKonde/jtag2updi, then updated to add some new features; namely HV programming, target power-cycle, target current overload sensing, operating mode selector and the functional status of the LED.
+The firmware was downloaded from https://github.com/ElTangas/jtag2updi, then updated to add some new features; namely HV programming, target power-cycle, target current overload sensing, operating mode selector and the functional status of the LED.
 
-The development for this has occurred prior to sign-up with GitHub. Development details have been noted [on this forum](https://forum.arduino.cc/index.php?topic=669577.0).
+The development for this has occurred prior to sign-up with GitHub. Some development details have been noted [on this forum](https://forum.arduino.cc/index.php?topic=669577.0).
 
 
 
