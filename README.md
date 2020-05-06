@@ -7,7 +7,7 @@ The development for this has occurred prior to sign-up with GitHub. Development 
 
 ## HV UPDI Programmer Schematic
 
-![](C:\Users\dlloy\Documents\GitHub\jtag2updi\ProgCircuit.JPG)
+![](ProgCircuit.JPG)
 
 | A7 Switch | Prog Mode        | PA0 Configurations | HV Pulse | Power Cycle |
 | --------- | ---------------- | ------------------ | -------- | ----------- |
