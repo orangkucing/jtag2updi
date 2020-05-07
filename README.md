@@ -7,7 +7,7 @@ The development for this has occurred prior to sign-up with GitHub. Some develop
 
 
 
-## HV UPDI Programmer Schematic
+## Schematic
 
 ![](ProgSch.PNG)
 
