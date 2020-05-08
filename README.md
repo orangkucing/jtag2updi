@@ -33,7 +33,7 @@ This mode applies the 12V UPDI enable sequence (HV pulse) at the start of the pr
 
 **PCHV Mode:**
 
-Power Cycle High Voltage mode (PCHV) will initiate a power cycle and HV pulse at the start of the programming sequence. At the end of the sequence, a second power cycle will occur which causes any new fuse setting to take effect. The power cycle OFF duration has been set to 10ms. This mode would be used when the UPDI/Reset pin is configured as GPIO.
+Power Cycle High Voltage mode (PCHV) will initiate a power cycle and HV pulse at the start of the programming sequence. At the end of the sequence, a second power cycle will occur which causes any new fuse setting to take effect. The power cycle OFF duration has been set to 10ms. This mode would be used when the UPDI/Reset pin is configured as Reset or GPIO.
 
 **Firmware Status:**
 
