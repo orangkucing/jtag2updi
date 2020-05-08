@@ -2,19 +2,12 @@
 
 This fork of the repo has been stripped down and modified so that folders don't need to be renamed in order to compile with the Arduino IDE.
 
-* Updated 5/5/2020 to bring in updates to main repo (I can't get git to merge it - y'all know how it hates when you move files around)
-
-Judging by the code, it looks like it also supports the tinyAVR 0-series and 1-series parts - but I haven't tried that?
-
-
-
-# Original readme follows:
-
-This is a firmware, that when uploaded on an atmega328p, or a similar AVR MCU (including experimental support for atmega1280/2560, and for Logic Green LGT8F328P/D AVR clones with 32 pins or more), enables it to interface with avrdude using the jtagice Mk2 protocol via a serial link. In particular, you can use an Arduino Uno/Nano to host this firmware (experimental support for Arduino Mega and LGT based Arduino clones).
+This is a firmware, that when uploaded on an atmega328p, or a similar AVR MCU, enables it to interface with avrdude using the jtagice Mk2 protocol via a serial link. In particular, you can use an Arduino to host this firmware.
+It provides a bridge to program the new attiny817 family of MCUs, that use the UPDI interface:
 
 avrdude -> HW Serial interface -> Programmer MCU (e.g. Mega328P) -> SW Serial on PD6 -> Target MCU (e.g. tiny817)
 
-Currently, I have not tested this software with a level shifter, however, since the UPDI pin is high voltage tolerant, it's ok to have V_prog > V_target, but not the reverse. <strong>Warning: only the UPDI pins of devices that support high voltage programming should be assumed to be high voltage tolerant. This is not the case for the Mega AVR-0 series!</strong>
+Currently, I have not tested this software with a level shifter, however, since the UPDI pin is high voltage tolerant, it's ok to have V_prog > V_target, but not the reverse.
 
 Notice, however, that the logic levels need to be compatible for successful programming: V_target cannot be lower than about 60% of V_prog (60% will likelly work, 70% is guaranteed to work). Therefore, it will not be possible to program a 2.5V target with a 5.0V programmer, because communication errors will surely occur (but no electrical damage), but if V_target is 3.3V (66% of 5.0V) chances are good.
 
@@ -46,9 +39,9 @@ Alternatively, you can use an Arduino without integrated USB/serial adapter, lik
 
 ## Building with Arduino IDE
 
-The program can be built as if it was an Arduino sketch.
+The program can be built as if it was an Arduino sketch. 
 
-Open jtag2updi.ino in the jtag2updi folder, and upload to your microcontroller.
+Open jtag2updi.ino in the jtag2updi folder, and upload to your microcontroller. 
 
 The Arduino IDE will automatically set the correct MCU model and F_CPU, but if you want to change the speed of the UPDI link, you will have to edit UPDI_BAUD directly in the source code.
 
@@ -139,4 +132,3 @@ If you have triple-checked all the connections but still getting errors, the pro
 This can be changed with the avrdude "-b" option. Valid baud rates are 2400, 4800, 9600, 14400, 19200, 38400, 57600 and 115200. You can make the setting permanent by editing the jtag2updi entry on "avrdude.conf".
 
 If the trouble is on the UPDI link, a slower speed can be selected by changing UPDI_BAUD and recompiling.
-
