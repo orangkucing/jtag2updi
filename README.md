@@ -6,5 +6,4 @@ The tinyAVR® 0 series and 1-series are programmed through the Unified Program a
 The HV UPDI programmers ([here](https://github.com/Dlloydev/jtag2updi/wiki)) are open source hardware designed to work with tinyAVR® [0-series](https://www.microchip.com/design-centers/8-bit/avr-mcus/device-selection/attiny1607) and [1-series](https://www.microchip.com/design-centers/8-bit/avr-mcus/device-selection/attiny3217) MCUs,  [megaTinyCore](https://github.com/SpenceKonde/megaTinyCore) and the [Arduino IDE](https://www.arduino.cc/en/Main/Software). Low cost and easy to use without interfering with the normal workflow in the Arduino IDE. The Arduino Serial Monitor is used as normal for debugging sketches and more.
 
 ![](..\jtag2updi.wiki\images\Protocol.png)
-
 [Learn More](https://github.com/Dlloydev/jtag2updi/wiki)
