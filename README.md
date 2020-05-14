@@ -7,4 +7,6 @@ The HV UPDI programmers ([here](https://github.com/Dlloydev/jtag2updi/wiki)) are
 
 ![](https://github.com/Dlloydev/jtag2updi/wiki/images/Protocol.png)
 
-#### [Learn More ...](https://github.com/Dlloydev/jtag2updi/wiki)
+#### [Build your own Arduino HV UPDI programmer](https://github.com/Dlloydev/jtag2updi/wiki/Arduino-Nano-HV-UPDI-Programmer)
+
+#### [More ...](https://github.com/Dlloydev/jtag2updi/wiki)
