@@ -3,72 +3,77 @@
  *
  * Created: 02-10-2018 13:07:52
  *  Author: JMR_2
- */ 
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-
+#include <avr/power.h>
 #include "sys.h"
+#include "dbg.h"
+#include <stdio.h>
+#include <string.h>
 
-#ifndef LED_PORT
-#define LED_PORT B
-#endif
-#ifndef LED_PIN
-#define LED_PIN 5
-#endif
+
+#include <stdio.h>
+#include <string.h>
+
+
 
 void SYS::init(void) {
+  #ifdef DEBUG_ON
+    DBG::initDebug();
+  #endif
 
-#ifndef __AVR_ATmega16__
+  #ifdef XAVR
+    _PROTECTED_WRITE(CLKCTRL.MCLKCTRLB, 0);
+    //PULLUP_ON(UPDI_PORT,UPDI_PIN)
+  #else
+    #if defined(ARDUINO_AVR_LARDU_328E)
+      clock_prescale_set ( (clock_div_t) __builtin_log2(32000000UL / F_CPU));
+    #endif
+	  PORT(UPDI_PORT) = 1<<UPDI_PIN;
+  #endif
 
-	/* Disable digital input buffers on port C */
-	DIDR0 = 0x3F;
-	/* Enable all port D pull-ups */
-	PORTD = 0xFF;
-	/* Enable all port B pull-ups, except for LED */
-	PORT(LED_PORT) = 0xFF - (1 << LED_PIN);
-	/* Disable unused peripherals */
-	ACSR = 1 << ACD;		// turn off comparator
-	PRR =
-		(1 << PRTWI) |		// turn off 2 wire interface
-		(1 << PRTIM2) |		// turn off timer 2
-		(1 << PRTIM1) |		// turn off timer 1
-		(1 << PRSPI) |		// turn off SPI interface
-		(1 << PRADC);		// turn off the ADC
 
-#else
-
-        /* No interrupts */
-        sei();
-        /* Enable all port D pull-ups */
-        PORT(UPDI_PORT) = 0xFF;
-        /* Enable LED */
-        PORT(LED_PORT) |= (1 << LED_PIN);
-        /* Enable all port B pull-ups, except for LED */
-        PORT(LED_PORT) = 0xFF - (1 << LED_PIN);
-
-        /* Disable unused peripherals */
-        SPCR &= ~(1<<SPE);
-        ADC  &= ~(1<<ADEN);
-        TWCR &= ~(1<<TWEN);
-
-        /* Disable resources after bootloader */
-        TIFR   = 0x00;
-        TIMSK  = 0x00;
-        TCNT1  = 0x0000;
-        OCR1A  = 0x0000;
-        OCR1B  = 0x0000;
-        TCCR1A = 0x0000;
-        TCCR1B = 0x0000;
-
-#endif
-
+  DDR(LED_PORT) |= (1 << LED_PIN);
+  #ifdef LED2_PORT
+  DDR(LED2_PORT) |= (1 << LED2_PIN);
+  #endif
+  TIMER_HOST_MAX=HOST_TIMEOUT;
+  TIMER_TARGET_MAX=TARGET_TIMEOUT;
+  DBG::debug(0x18,0xC0,0xFF, 0xEE);
 }
 
 void SYS::setLED(void){
-	PORT(LED_PORT) |= 1 << LED_PIN;	
+	PORT(LED_PORT) |= 1 << LED_PIN;
 }
 
 void SYS::clearLED(void){
-	PORT(LED_PORT) &= ~(1 << LED_PIN);	
+	PORT(LED_PORT) &= ~(1 << LED_PIN);
+}
+
+void SYS::setVerLED(void){
+        #ifdef LED2_PORT
+        PORT(LED2_PORT) |= 1 << LED2_PIN;
+        #endif
+}
+
+void SYS::clearVerLED(void){
+        #ifdef LED2_PORT
+        PORT(LED2_PORT) &= ~(1 << LED2_PIN);
+        #endif
+}
+
+/*
+inline void SYS::startTimer()
+inline void SYS::stopTimer()
+
+Timeout mechanisms, 5/2020, Spence Konde
+*/
+
+uint8_t SYS::checkTimeouts() {
+return TIMEOUT_REG;
+}
+void SYS::clearTimeouts() {
+  TIMEOUT_REG=WAIT_FOR_HOST|WAIT_FOR_TARGET;
 }
