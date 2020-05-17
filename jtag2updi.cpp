@@ -126,7 +126,9 @@ namespace {
           #endif
           if (HostTimeoutCount++>3) {
             // Time to give up on host, restore default baud rate, and wait for future contact
+            #if defined(DEBUG_ON)
             DBG::debug("Giving up...");
+            #endif
             JTAG2::PARAM_BAUD_RATE_VAL = JTAG2::baud_19200;
             JICE_io::set_baud(JTAG2::baud_19200);
             JTAG2::ConnectedTo&=0xFE; // no longer talking to host.

@@ -27,8 +27,6 @@
   #define LED2_PORT A
   #define LED2_PIN 6
 
-  #define USE_SPIDEBUG
-
 
   //USARTDEBUG not practical here because only one UART.
 
@@ -42,8 +40,7 @@
   // at least on parts with the second USART
   // You should be able to hit 2MBaud with F_CPU=16000000 and DEBUG_BAUDVAL 0 or 1mbaud with 1 if your serial adapter can't handle that.
   // At 20, though, on classic AVRs, you're out of luck unless you have an adapter that can do 2.5 mbaud...have to go all the way down to 500kbaud (DEBUG_BAUDVAL 4) to divide it to something common.. Good thing almost everyone runs them at 16.
-  // #define USE_USARTDEBUG
-  // #define DEBUG_BAUDVAL 0
+
 
 
 
@@ -53,25 +50,17 @@
   // Same deal as before/ Remember that the buildin LED is on the same pin as SCK on most boards, so you'll want to cadd LEDs on other pinn, defaults to D2
   // On PB parts can also use second USART. Using the second SPI is not supported.
 
-  #define USE_SPIDEBUG
-
 
 
 #elif defined (__AVR_ATmega_Mega__)
   // 2560 and that family, like the ones used on the Arduino Mega
   // Same as the others with extra USARTS, only here you can specify which one if you must
-  // #define USE_USARTDEBUG
-  // #define DEBUG_USART 2
-  // Can even change the host USART if you want
 
 
 #elif defined (__AVR_ATmega_Zero__)
 // 4808, 4809. and the rest of the megaAVR 0-series
 // Same as above, pretty much
 // big difference here is your specify the name of the peripheral instead of the number, and the target baud rate, because we grab the OSCCAL value per datasheet./
-  #define USE_USARTDEBUG
-  #define DEBUG_USART USART1
-  #define DEBUG_BAUDRATE 2000000UL
 
 #endif
 
@@ -305,7 +294,7 @@
   #endif
 #endif
 
-
+#if defined(DEBUG_ON)
 namespace DBG {
   void initDebug(void);
   void updi_st_ptr_l(uint32_t address);
@@ -340,5 +329,6 @@ namespace DBG {
   void debug(char prefix, uint8_t data0, uint8_t data1);
   void debug(char prefix, uint8_t data0, uint8_t data1, uint8_t data2);
 }
+#endif
 
 #endif /* DBG_H_ */

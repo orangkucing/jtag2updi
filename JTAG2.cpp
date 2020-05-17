@@ -162,7 +162,9 @@ void JTAG2::set_device_descriptor() {
   UPDI::stcs(UPDI::reg::Control_A, 0x06);
   uint8_t sib[16];
   UPDI::read_sib(sib);
+  #if defined(DEBUG_ON)
   DBG::debug(sib, 16, 1);
+  #endif
 
   if (sib[10] == '2') {
     nvm_version = 2;
@@ -207,7 +209,9 @@ void JTAG2::enter_progmode() {
         uint8_t NVM_Status = UPDI::lds_b(NVM::NVM_base + NVM::STATUS);
         uint8_t NVM_Cmnd = UPDI::lds_b(NVM::NVM_base + NVM::CTRLA);
         if (NVM_Status || NVM_Cmnd ) {
+          #if defined(DEBUG_ON)
           DBG::debug('d', NVM_Status,NVM_Cmnd);
+          #endif
           UPDI::sts_b(NVM::NVM_base + NVM::STATUS, 0);
           UPDI::sts_b(NVM::NVM_base + NVM::CTRLA, 0);
         }
@@ -217,7 +221,9 @@ void JTAG2::enter_progmode() {
         uint8_t NVM_Status = UPDI::lds_b(NVM_v2::NVM_base + NVM_v2::STATUS);
         uint8_t NVM_Cmnd = UPDI::lds_b(NVM_v2::NVM_base + NVM_v2::CTRLA);
         if (NVM_Status || NVM_Cmnd ) {
+          #if defined(DEBUG_ON)
           DBG::debug('d', NVM_Status,NVM_Cmnd);
+          #endif
           UPDI::sts_b(NVM_v2::NVM_base + NVM_v2::STATUS, 0);
           UPDI::sts_b(NVM_v2::NVM_base + NVM_v2::CTRLA, 0);
 
@@ -225,7 +231,9 @@ void JTAG2::enter_progmode() {
       }
         // Turn on LED to indicate program mode
         SYS::setLED();
+        #if defined(DEBUG_ON)
         DBG::debug('R',UPDI::lds_b(0x0F01));
+        #endif
 /*
         UPDI::stptr_w(0x0F00);
         UPDI::rep(31);
@@ -515,7 +523,9 @@ void JTAG2::enter_progmode() {
     uint8_t stat = UPDI::lds_b(NVM_v2::NVM_base + NVM_v2::STATUS);
     if (stat > 3) {
       uint8_t cmd=UPDI::lds_b(NVM_v2::NVM_base + NVM_v2::CTRLA);
+      #if defined(DEBUG_ON)
       DBG::debug('f',stat,cmd,0);
+      #endif
       UPDI::sts_b(NVM_v2::NVM_base + NVM_v2::STATUS, 0);
     }
     //wait until operation completed

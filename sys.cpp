@@ -41,7 +41,9 @@ void SYS::init(void) {
   #endif
   TIMER_HOST_MAX=HOST_TIMEOUT;
   TIMER_TARGET_MAX=TARGET_TIMEOUT;
+  #if defined(DEBUG_ON)
   DBG::debug(0x18,0xC0,0xFF, 0xEE);
+  #endif
 }
 
 void SYS::setLED(void){

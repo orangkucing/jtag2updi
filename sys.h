@@ -54,15 +54,12 @@
 	#define LED2_PORT A
 	#define LED2_PIN 6
 
-	#define USE_SPIDEBUG
+  //USARTDEBUG not practical here because only one UART.
+//	#define USE_SPIDEBUG
 
-
-	//USARTDEBUG not practical here because only one UART.
-
-
-  //SPIPRESC sets prescaler of SPI clock - it can go *INSANELY* fast, such that very little could keep up with it. Default it 8, which works okay at 16MHz, but at 20, it outruns what my receiver can procecess without a more elaborate buffering scheme.
-  //This would change it to a more modest 16 (stil really fast)
-  #define SPIPRESC (SPI_CLK2X_bm|SPI_PRESC1_bm|SPI_PRESC0_bm)
+  //SPIPRESC sets prescaler of SPI clock - it can go *INSANELY* fast, such that very little could keep up with it.
+  
+  #define SPIPRESC (SPI_CLK2X_bm|SPI_PRESC1_bm)
 
 
 #elif defined( __AVR_ATmega_Mighty__ )
@@ -85,8 +82,8 @@
 	// On PB parts can also use second USART. Using the second SPI is not supported.
 
 
-	#define USE_SPIDEBUG
-	#define SPIPRESC (0x05)
+//	#define USE_SPIDEBUG
+//	#define SPIPRESC (0x05)
 
 
 

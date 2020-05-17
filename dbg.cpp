@@ -11,8 +11,9 @@
 #include "dbg.h"
 #include "sys.h"
 
+#if defined(DEBUG_ON)
+
 void DBG::updi_st_ptr_l(uint32_t address) {
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -26,11 +27,9 @@ void DBG::updi_st_ptr_l(uint32_t address) {
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 
 void DBG::updi_st_ptr_w(uint16_t address) {
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -43,12 +42,10 @@ void DBG::updi_st_ptr_w(uint16_t address) {
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 
 
 void DBG::updi_lds(uint32_t address) {
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -62,11 +59,9 @@ void DBG::updi_lds(uint32_t address) {
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 
 void DBG::updi_lds(uint16_t address) {
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -79,11 +74,9 @@ void DBG::updi_lds(uint16_t address) {
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 
 void DBG::updi_sts(uint32_t address, uint16_t data) {
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -100,11 +93,9 @@ void DBG::updi_sts(uint32_t address, uint16_t data) {
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 
 void DBG::updi_sts(uint32_t address, uint8_t data) {
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -119,11 +110,9 @@ void DBG::updi_sts(uint32_t address, uint8_t data) {
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 
 void DBG::updi_sts(uint16_t address, uint16_t data) {
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -139,11 +128,9 @@ void DBG::updi_sts(uint16_t address, uint16_t data) {
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 
 void DBG::updi_sts(uint16_t address, uint8_t data) {
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -157,12 +144,10 @@ void DBG::updi_sts(uint16_t address, uint8_t data) {
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 
 
 void DBG::updi_ldcs(uint8_t command) {
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -174,11 +159,9 @@ void DBG::updi_ldcs(uint8_t command) {
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 
 void DBG::updi_stcs(uint8_t command, uint8_t data) {
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -191,12 +174,10 @@ void DBG::updi_stcs(uint8_t command, uint8_t data) {
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 
 
 void DBG::updi_rep(uint8_t reps) {
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -207,11 +188,9 @@ void DBG::updi_rep(uint8_t reps) {
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 
 void DBG::updi_res(uint32_t data, uint8_t isaddr) {
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -229,11 +208,9 @@ void DBG::updi_res(uint32_t data, uint8_t isaddr) {
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 
 void DBG::updi_res(uint16_t data, uint8_t isaddr) {
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -248,11 +225,9 @@ void DBG::updi_res(uint16_t data, uint8_t isaddr) {
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 
 void DBG::updi_res(uint8_t data) {
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -260,11 +235,9 @@ void DBG::updi_res(uint8_t data) {
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 
 void DBG::updi_key(){
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -274,7 +247,6 @@ void DBG::updi_key(){
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 
 void DBG::initDebug(void) {
@@ -332,7 +304,6 @@ void DBG::initDebug(void) {
 }
 
 void DBG::debug(char prefix, uint8_t data0, uint8_t data1, uint8_t data2){
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -347,10 +318,8 @@ void DBG::debug(char prefix, uint8_t data0, uint8_t data1, uint8_t data2){
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 void DBG::debug(char prefix, uint8_t data0, uint8_t data1){
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -363,10 +332,8 @@ void DBG::debug(char prefix, uint8_t data0, uint8_t data1){
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 void DBG::debug(char prefix, uint8_t data0){
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -377,7 +344,6 @@ void DBG::debug(char prefix, uint8_t data0){
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 
 
@@ -385,7 +351,6 @@ void DBG::debug(const char *str, uint8_t newline) {
   DBG::debug((const uint8_t *)str, strlen(str), newline);
 }
 void DBG::debug(const uint8_t *data, size_t datalen , uint8_t newline) {
-  #if defined(DEBUG_ON)
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -397,7 +362,6 @@ void DBG::debug(const uint8_t *data, size_t datalen , uint8_t newline) {
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
-  #endif
 }
 void DBG::debugWriteStr(const char *str) {
   DBG::debugWriteBytes((const uint8_t *)str, strlen(str));
@@ -406,6 +370,7 @@ void DBG::debugWriteBytes(const uint8_t *data, size_t datalen) {
     while (datalen--) {
       DBG::debugWriteByte(*data++);
     }
+    
 }
 void DBG::debugWriteHex(uint8_t databyte) {
   uint8_t b1=(databyte>>4)|'0';
@@ -420,3 +385,5 @@ void DBG::debugWriteByte(uint8_t databyte) {
   DEBUGDATA=databyte;
   loop_until_bit_is_set(DEBUGFLAGS,DEBUGSENDNOW);
 }
+
+#endif

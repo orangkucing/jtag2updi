@@ -14,6 +14,7 @@
 #include "updi_io.h"
 #include "dbg.h"
 
+#if defined(DEBUG_ON)
 //#define DEBUG_STCS
 //#define DEBUG_LDCS
 //#define DEBUG_REP
@@ -21,6 +22,7 @@
 //#define DEBUG_STPTR
 //#define DEBUG_LDS
 //#define DEBUG_KEY
+#endif
 
 namespace UPDI {
 	// UPDI registers
