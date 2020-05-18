@@ -13,12 +13,12 @@
 #include "JTAG2.h"
 
 namespace JICE_io {
-  // Function prototypes
-  uint8_t put(char c);
-  uint8_t get(void);
-  void init(void);
-  void flush(void);
-  void set_baud(JTAG2::baud_rate rate);
+	// Function prototypes
+	uint8_t put(char c);
+	uint8_t get(void);
+	void init(void);
+	void flush(void);
+	void set_baud(JTAG2::baud_rate rate);
 }
 
 #endif /* JICE_IO_H_ */

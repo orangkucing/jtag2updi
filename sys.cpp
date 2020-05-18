@@ -1,109 +1,106 @@
 /*
-   sys.cpp
-
-   Created: 02-10-2018 13:07:52
-    Author: JMR_2
-*/
+ * sys.cpp
+ *
+ * Created: 02-10-2018 13:07:52
+ *  Author: JMR_2
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/power.h>
 #include <util/delay.h>
-
 #include "sys.h"
 #include "UPDI_lo_lvl.h"
+#include "dbg.h"
+#include <stdio.h>
+#include <string.h>
+
+
+#include <stdio.h>
+#include <string.h>
+
+
 
 void SYS::init(void) {
+  #ifdef DEBUG_ON
+    DBG::initDebug();
+  #endif
 
-#ifndef __AVR_ATmega16__
-#  if defined XTINY
-  // Set clock speed to maximum (default 20MHz, or 16MHz set by fuse)
-  _PROTECTED_WRITE(CLKCTRL.MCLKCTRLB, 0);
-  /* Disable unused peripherals */
-  //ToDo
-# else
-#   if defined(ARDUINO_AVR_LARDU_328E)
-  clock_prescale_set ( (clock_div_t) __builtin_log2(32000000UL / F_CPU));
-#   endif
-  /* Disable digital input buffers on port C */
-  DIDR0 = 0x3F;
-  /* Disable unused peripherals */
-  ACSR = 1 << ACD;    // turn off comparator
-# endif
-  /* Enable all UPDI port pull-ups */
-  PORT(UPDI_PORT) = 0xFF;
-  /* Enable all LED port pull-ups, except for the LED pin and HV pin */
-  PORT(LED_PORT) = 0b11001111;
-  /* Configure LED and HV pins as outputs */
-  DDR(LED_PORT) |= 0b00110000;
+  #ifdef XAVR
+    _PROTECTED_WRITE(CLKCTRL.MCLKCTRLB, 0);
+    //PULLUP_ON(UPDI_PORT,UPDI_PIN)
+  #else
+    #if defined(ARDUINO_AVR_LARDU_328E)
+      clock_prescale_set ( (clock_div_t) __builtin_log2(32000000UL / F_CPU));
+    #endif
+	  PORT(UPDI_PORT) = 1<<UPDI_PIN;
+  #endif
 
-#else
-  /* No interrupts */
-  sei();
-  /* Enable all UPDI port pull-ups */
-  PORT(UPDI_PORT) = 0xFF;
-  /* Enable LED */
-  PORT(LED_PORT) |= (1 << LED_PIN);
-  /* Enable all LED port pull-ups, except for the LED pin */
-  PORT(LED_PORT) = 0xFF - (1 << LED_PIN);
-
-
-  /* Disable unused peripherals */
-  SPCR &= ~(1 << SPE);
-  // ADC  &= ~(1<<ADEN);  target power overload function needs ADC
-  TWCR &= ~(1 << TWEN);
-
-  /* Disable resources after bootloader */
-  TIFR   = 0x00;
-  TIMSK  = 0x00;
-  TCNT1  = 0x0000;
-  OCR1A  = 0x0000;
-  OCR1B  = 0x0000;
-  TCCR1A = 0x0000;
-  TCCR1B = 0x0000;
-#endif
-
-}
-/* LED on for any traffic, remains on when avrdude hangs, blinks for OVL indication */
-void SYS::setLED(void) {
-  PORT(LED_PORT) |= 1 << LED_PIN;
+  DDR(LED_PORT) |= ((1 << LED_PIN) | (1 << HV_PIN));
+  #ifdef LED2_PORT
+  DDR(LED2_PORT) |= (1 << LED2_PIN);
+  #endif
+  TIMER_HOST_MAX=HOST_TIMEOUT;
+  TIMER_TARGET_MAX=TARGET_TIMEOUT;
+  #if defined(DEBUG_ON)
+  DBG::debug(0x18,0xC0,0xFF, 0xEE);
+  #endif
 }
 
-void SYS::clearLED(void) {
-  PORT(LED_PORT) &= ~(1 << LED_PIN);
+void SYS::setLED(void){
+	PORT(LED_PORT) |= 1 << LED_PIN;
+}
+
+void SYS::clearLED(void){
+	PORT(LED_PORT) &= ~(1 << LED_PIN);
+}
+
+void SYS::setVerLED(void){
+        #ifdef LED2_PORT
+        PORT(LED2_PORT) |= 1 << LED2_PIN;
+        #endif
+}
+
+void SYS::clearVerLED(void){
+        #ifdef LED2_PORT
+        PORT(LED2_PORT) &= ~(1 << LED2_PIN);
+        #endif
+}
+
+/*
+inline void SYS::startTimer()
+inline void SYS::stopTimer()
+
+Timeout mechanisms, 5/2020, Spence Konde
+*/
+
+uint8_t SYS::checkTimeouts() {
+return TIMEOUT_REG;
+}
+void SYS::clearTimeouts() {
+  TIMEOUT_REG=WAIT_FOR_HOST|WAIT_FOR_TARGET;
 }
 
 void SYS::pulseHV(void) {
-  PORT(LED_PORT) |= 0b00010000;     // set HV
+  PORT(HV_PORT) |= 1 << HV_PIN;     // set HV
   _delay_us(250);                   // duration (allowable range = 100-1000µs)
-  PORT(LED_PORT) &= 0b11101111;     // clear HV
+  PORT(HV_PORT) &= ~(1 << HV_PIN);  // clear HV
   _delay_us(3);                     // delay (allowable range = 1-10µs)
 }
 
-void SYS::double_breakHV(void) {
-  _delay_us(3);
-  TCCR0A = 0;
-  DDRD |= (1 << DDD6);   // tx enable
-  for (uint16_t i = 0; i < 2; i++) {  // send double break, 78µs x 2 = 156µs (max
-    PORTD &= ~(1 << DDD6);
-    _delay_us(6 * 12);     // low 12 cycle
-    PORTD |=  (1 << DDD6);
-    _delay_us(6);          // high 1 cycle
-  }
-  DDRD &= ~(1 << DDD6);    // RX enable
-  TCCR0A = (1 << COM0A1) | (1 << COM0A0) | (1 << WGM01);  // setup bit high
-  _delay_us(1000);         // Debugger.txd = z (allowable range = 200-14000µs)
-}
-
 void SYS::setPOWER(void) {
+#if defined (__AVR_ATmega_Mini__)
   DDRC |= 0b00111111;         // enable pullups
   PORTC |= 0b00111111;        // set as outputs
+# endif
   _delay_us(10);
 }
 
 void SYS::clearPOWER(void) {
+#if defined (__AVR_ATmega_Mini__)
   DDRC &= 0b11000000;         // disable pullups
   PORTC &= 0b11000000;        // set as inputs
+# endif
 }
 
 void SYS::cyclePOWER(void) {
@@ -113,18 +110,12 @@ void SYS::cyclePOWER(void) {
   _delay_us(2000);
 }
 
-void SYS::updiENABLE(void) {
-  SYS::pulseHV();
-  _delay_us(200);
-  UPDI_io::put(UPDI::SYNCH);
-  _delay_us(100);
-}
-
 void SYS::checkOVERLOAD(void) {
+#if defined (__AVR_ATmega_Mini__)
   // Use A6 to check for overload on A0-A5 (target power)
   ADCSRA =  (1 << ADEN); // turn ADC on
   ADCSRA |= (1 << ADPS0) | (1 << ADPS1) | (1 << ADPS2);  // Prescaler of 128
-  ADMUX = (1 << REFS0) | (1 << ADLAR) | (6 & 0x07);  // Use AVcc reference, 8-bit result, select A6
+  ADMUX = (1 << REFS0) | (1 << ADLAR) | (6 & 0x07);      // Use AVcc reference, 8-bit result, select A6
 
   uint16_t sum = 0;
   for (int i = 0 ; i < 250 ; i++) {  // totalize 250 8-bit readings
@@ -141,14 +132,26 @@ void SYS::checkOVERLOAD(void) {
       _delay_us(200000);
     }
   }
+# endif
 }
 
 uint8_t SYS::checkHVMODE() {
+#if defined (__AVR_ATmega_Mini__)
   // check HV Programming Mode Switch on A7
-  ADCSRA =  (1 << ADEN); // turn ADC on
+  ADCSRA =  (1 << ADEN);                                 // turn ADC on
   ADCSRA |= (1 << ADPS0) | (1 << ADPS1) | (1 << ADPS2);  // Prescaler of 128
-  ADMUX = (1 << REFS0) | (1 << ADLAR) | (7 & 0x07);  // Use AVcc reference, 8-bit result, select A7
-  ADCSRA  |= (1 << ADSC);          // start a conversion
-  while (ADCSRA &  (1 << ADSC));   // wait while busy
-  return ADCH;                     // return HV mode jumper setting
+  ADMUX = (1 << REFS0) | (1 << ADLAR) | (7 & 0x07);      // Use AVcc reference, 8-bit result, select A7
+  ADCSRA  |= (1 << ADSC);                                // start a conversion
+  while (ADCSRA &  (1 << ADSC));                         // wait while busy
+  return ADCH;                                           // return HV mode jumper setting
+# endif
+}
+
+void SYS::updiENABLE(void) {
+#if defined (__AVR_ATmega_Mini__)
+  SYS::pulseHV();
+  _delay_us(200);
+  UPDI_io::put(UPDI::SYNCH);
+  _delay_us(100);
+# endif
 }
