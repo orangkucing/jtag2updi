@@ -1,7 +1,23 @@
 # jtag2updi
 
-This fork of the repo has been stripped down and modified so that folders don't need to be renamed in order to compile with the Arduino IDE.
+This fork of the repo has been stripped down and modified so that folders don't need to be renamed in order to compile with the Arduino IDE. 
+## New Features
+This has also has the following additions:
+* Support for DA-series and upcoming DB-series parts; correct mode for reading and writing is deduced by reading the SIB
+* Timeout function - a lack of messages from host for 250ms or the target failing to send an expected response for 100ms will result in a timeout. Timeouts from target are reported to host. Timeouts waiting for host will lead to it attempting to reset a failed status message (on the grounds that "maybe it didn't get through". Four consecutive timeouts waiting for host will cause it to reset to it's initial state and await a new attempt at communication from the host. 
+* Improve write speed by disabling the response signature during burst writes (NO_ACK_WRITE).
+* Add debug channel via SPI or second USART to provide rich debugging output.
+* Add support for running on addittional processors: 40/44 pin ATmega parts (ones supported by MightyCore), 64/100-pin ATmega parts (ones supported by MegaCore), 28/32-pin ATmega parts (ones supported by MiniCore), and megaAVR 0-series parts (supported by MegaCoreX). The tinyAVR 0-series and 1-series parts (supported by megaTinyCore) are also supported.
 
+## Known issues
+There are the following known issues:
+* Timeout system breaks compatibility with terminal mode (-t option), by definition, as a user in terminal mode will inevitably take longer than it is configured to wait. This will be corrected via a planned SUPPORT_TERMINAL_MODE option for those small number of users who use terminal mode.
+* Does not work correctly on LGT-based clones
+* has_pdi does not work correctly (waiting to hear back whether it is broken for all parts or just DA-series parts)
+* Does not run on DA-series parts - This will be corrected by addition of a few more defines, should be easy
+* Does not support targets operating at a low voltage - this could be solved by using an analog comparator for receiving, and using pin in "open drain" mode for transmitting, but I doubt I'll ever bother to implement this.
+
+# Original Readme
 This is a firmware, that when uploaded on an atmega328p, or a similar AVR MCU, enables it to interface with avrdude using the jtagice Mk2 protocol via a serial link. In particular, you can use an Arduino to host this firmware.
 It provides a bridge to program the new attiny817 family of MCUs, that use the UPDI interface:
 
