@@ -65,10 +65,6 @@ namespace {
         #endif
         switch (JTAG2::packet.body[0]) {
           case JTAG2::CMND_GET_SIGN_ON:
-            #if defined (__AVR_ATmega_Mini__)
-              if (SYS::checkHVMODE() > 200) SYS::cyclePOWER();  // if UDPI as GPIO, power-cycle target
-              if (SYS::checkHVMODE() > 100) SYS::updiENABLE();  // if UDPI as GPIO or RESET, apply HV pulse, double-break and sync
-            #endif
             JTAG2::sign_on();
             break;
           case JTAG2::CMND_GET_PARAMETER:
@@ -103,6 +99,10 @@ namespace {
               JTAG2::go();
             break;
           case JTAG2::CMND_SET_DEVICE_DESCRIPTOR:
+            #if defined (__AVR_ATmega_Mini__)
+              if (SYS::checkHVMODE() > 200) SYS::cyclePOWER();  // if UDPI as GPIO, power-cycle target
+              if (SYS::checkHVMODE() > 100) SYS::pulseHV();    // if UDPI as GPIO or RESET, apply HV pulse
+            #endif
             JTAG2::set_device_descriptor();
             break;
           case JTAG2::CMND_READ_MEMORY:

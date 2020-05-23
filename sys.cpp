@@ -85,7 +85,7 @@ void SYS::pulseHV(void) {
   PORT(HV_PORT) |= 1 << HV_PIN;     // set HV
   _delay_us(250);                   // duration (allowable range = 100-1000µs)
   PORT(HV_PORT) &= ~(1 << HV_PIN);  // clear HV
-  _delay_us(3);                     // delay (allowable range = 1-10µs)
+  _delay_us(8);                     // delay (allowable range = 1-10µs)
 }
 
 void SYS::setPOWER(void) {
@@ -144,14 +144,5 @@ uint8_t SYS::checkHVMODE() {
   ADCSRA  |= (1 << ADSC);                                // start a conversion
   while (ADCSRA &  (1 << ADSC));                         // wait while busy
   return ADCH;                                           // return HV mode jumper setting
-# endif
-}
-
-void SYS::updiENABLE(void) {
-#if defined (__AVR_ATmega_Mini__)
-  SYS::pulseHV();
-  _delay_us(200);
-  UPDI_io::put(UPDI::SYNCH);
-  _delay_us(100);
 # endif
 }

@@ -442,7 +442,6 @@ namespace SYS {
   void cyclePOWER(void);
   void checkOVERLOAD(void);
   uint8_t checkHVMODE();
-  void updiENABLE(void);
 }
 
 #endif /* SYS_H_ */
