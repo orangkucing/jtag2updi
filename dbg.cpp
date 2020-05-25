@@ -11,6 +11,8 @@
 #include "dbg.h"
 #include "sys.h"
 
+
+
 #if defined(DEBUG_ON)
 
 void DBG::updi_st_ptr_l(uint32_t address) {
@@ -190,6 +192,53 @@ void DBG::updi_rep(uint8_t reps) {
     #endif
 }
 
+void DBG::updi_reset() {
+    #ifdef USE_SPIDEBUG
+      PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
+    #endif
+    DBG::debugWriteByte(0x0D);
+    DBG::debugWriteByte(0x0A);
+    DBG::debugWriteStr("RESET ");
+    #ifdef USE_SPIDEBUG
+      PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
+    #endif
+}
+void DBG::updi_reset_on() {
+    #ifdef USE_SPIDEBUG
+      PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
+    #endif
+    DBG::debugWriteByte(0x0D);
+    DBG::debugWriteByte(0x0A);
+    DBG::debugWriteStr("RESET ON");
+    #ifdef USE_SPIDEBUG
+      PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
+    #endif
+}
+void DBG::updi_reset_off() {
+    #ifdef USE_SPIDEBUG
+      PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
+    #endif
+    DBG::debugWriteByte(0x0D);
+    DBG::debugWriteByte(0x0A);
+    DBG::debugWriteStr("RESET OFF");
+    #ifdef USE_SPIDEBUG
+      PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
+    #endif
+}
+
+void DBG::updi_post_reset(uint8_t mode) {
+    #ifdef USE_SPIDEBUG
+      PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
+    #endif
+    DBG::debugWriteByte(0x0D);
+    DBG::debugWriteByte(0x0A);
+    DBG::debugWriteStr("NewMode ");
+    DBG::debugWriteHex(mode);
+    #ifdef USE_SPIDEBUG
+      PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
+    #endif
+}
+
 void DBG::updi_res(uint32_t data, uint8_t isaddr) {
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
@@ -256,10 +305,10 @@ void DBG::initDebug(void) {
     DDR(SPIPORT)|=1<<SSPIN;
     PORT(SPIPORT)|=1<<SSPIN;
   #endif
-  #if defined XAVR
+  #if defined(XAVR)
     // Set clock speed to maximum (default 20MHz, or 16MHz set by fuse)
     #if defined(USE_USARTDEBUG)
-      #if !defined(USE_EXTERNAL_OSCILLATOR)
+      #if !defined(USE_EXTERNAL_OSCILLATOR) && !defined(__AVR_DA__)
         #if (F_CPU==20000000UL) //this means we are on the 20MHz oscillator
           #ifdef UARTBAUD3V
             int8_t sigrow_val = SIGROW.OSC20ERR3V;
@@ -348,9 +397,9 @@ void DBG::debug(char prefix, uint8_t data0){
 
 
 void DBG::debug(const char *str, uint8_t newline) {
-  DBG::debug((const uint8_t *)str, strlen(str), newline);
+  DBG::debug((const uint8_t *)str, strlen(str), newline, 0);
 }
-void DBG::debug(const uint8_t *data, size_t datalen , uint8_t newline) {
+void DBG::debug(const uint8_t *data, size_t datalen , uint8_t newline, uint8_t ashex) {
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)&=~(1<<SSPIN); //lower SSPIN
     #endif
@@ -358,19 +407,23 @@ void DBG::debug(const uint8_t *data, size_t datalen , uint8_t newline) {
       DBG::debugWriteByte(0x0D);
       DBG::debugWriteByte(0x0A);
     }
-    DBG::debugWriteBytes(data,datalen);
+    DBG::debugWriteBytes(data,datalen,ashex);
     #ifdef USE_SPIDEBUG
       PORT(SPIPORT)|=1<<SSPIN; //raise SSPIN
     #endif
 }
 void DBG::debugWriteStr(const char *str) {
-  DBG::debugWriteBytes((const uint8_t *)str, strlen(str));
+  DBG::debugWriteBytes((const uint8_t *)str, strlen(str),0);
 }
-void DBG::debugWriteBytes(const uint8_t *data, size_t datalen) {
+void DBG::debugWriteBytes(const uint8_t *data, size_t datalen, uint8_t ashex) {
     while (datalen--) {
-      DBG::debugWriteByte(*data++);
+      if(ashex){
+        DBG::debugWriteHex(*data++);
+      } else {
+        DBG::debugWriteByte(*data++);
+      }
     }
-    
+
 }
 void DBG::debugWriteHex(uint8_t databyte) {
   uint8_t b1=(databyte>>4)|'0';

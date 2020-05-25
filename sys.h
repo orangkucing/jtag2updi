@@ -13,17 +13,31 @@
 #include <stdio.h> // for size_t
 #include "parts.h"
 
+//Disable the response signature during burst writes to permit faster writes
 #define NO_ACK_WRITE
 
+// Disable the host timeout - this is required for use with avrdude in terminal mode (-t)
+// but with this disabled, can get "stuck" if communication with host is interrupted at 115200 baud
+// as avrdude on next start will try to communicate at 19200 baud. Reset is required to fix this.
+// Potential enhancement - if this is set, while waiting for message from host, ALSO count transitions on the RX pin
+// If we see a bunch of transitions, but no received characters, we know the host is using the wrong baud rate, and
+// so, switch back to 19200 baud.
+//#define DISABLE_HOST_TIMEOUT
 
-//#define USE_WDT_RESET
+// Disable the timeout waiting for response from target. Probablty not necessary to set. With this disabled, if the target is expected to respond
+// but does not, jtag2updi will get stuck waiting for it.
+
+//#define DISABLE_TARGET_TIMEOUT
+
+// this will include the SIB, deduced NVM version, and silicon revision in early responses to SET_DEVICE_DESCRIPTPOR (for SIB and NVM version) and ENTER_PROGMODE (for silicon rev)
+#define INCLUDE_EXTRA_INFO_JTAG
 
 
 // Auxiliary Macros
 #define CONCAT(A,B) A##B
 //#define CONCAT3(A,B,C) A##B##C
-#if __AVR_ARCH__ == 103
-//We'll call these ones XAVR for purposes of defines, instead of XTINY, so someone could do this with a x08-series part
+#if (__AVR_ARCH__ == 103) || (__AVR_ARCH__ == 104)
+//We'll call these ones XAVR for purposes of defines, instead of XTINY. This encompases megaAVR 0-series and DA-series parts
 
 	#define XAVR
 	#	define PIN(x) CONCAT(VPORT,x).IN
@@ -82,8 +96,8 @@
 	// On PB parts can also use second USART. Using the second SPI is not supported.
 
 
-//	#define USE_SPIDEBUG
-//	#define SPIPRESC (0x05)
+	//#define USE_SPIDEBUG
+	//#define SPIPRESC (0x05)
 
 
 
@@ -95,7 +109,7 @@
 	// Can even change the host USART if you want
 
 
-#elif defined (__AVR_ATmega_Zero__)
+#elif defined (__AVR_ATmega_Zero__ || __AVR_DA__)
 // 4808, 4809. and the rest of the megaAVR 0-series
 // Same as above, pretty much
 // big difference here is your specify the name of the peripheral instead of the number, and the target baud rate, because we grab the OSCCAL value per datasheet./
@@ -114,6 +128,7 @@
 #if defined(__AVR_ATtiny_Zero_One__)
 // tinyAVR 0-series and 1-series parts
 
+
   # ifndef HV_PORT
   #   define HV_PORT A
   # endif
@@ -121,7 +136,7 @@
   # ifndef HV_PIN
   #   define HV_PIN 3
   # endif
-	
+
 	#	ifndef UPDI_PORT
 	#		define UPDI_PORT B
 	#	endif
@@ -186,6 +201,7 @@
 #elif defined (__AVR_ATmega_Mini__) || defined(ARDUINO_AVR_LARDU_328E)
 	// For ATmega328 and 168 (P, PB) parts
 
+
   # ifndef HV_PORT
   #   define HV_PORT B
   # endif
@@ -244,7 +260,7 @@
 	#	endif
 
 
-#elif defined (__AVR_ATmega_Zero__)
+#elif defined (__AVR_ATmega_Zero__ || __AVR_DA__)
 // 4808, 4809. and the rest of the megaAVR 0-series
 
 
@@ -314,19 +330,7 @@
 
 
 
-// TIMEOUTS
-// HOST_TIMEOUT =~250ms
-// TARGET_TIMEOUT=~100ms
-#if (F_CPU==20000000U)
-#define HOST_TIMEOUT 19000
-#define TARGET_TIMEOUT 7800
-#elif (F_CPU==16000000U)
-#define HOST_TIMEOUT 15600
-#define TARGET_TIMEOUT 6250
-#else //8000000U
-#define HOST_TIMEOUT 7800
-#define TARGET_TIMEOUT 3125
-#endif
+
 
 #ifdef XAVR
 	#define TIMER_ON TCA_SINGLE_CLKSEL_DIV256_gc | TCA_SINGLE_ENABLE_bm
@@ -358,6 +362,23 @@
 #ifndef F_CPU
 	# warning "F_CPU not defined, assuming 16MHz"
 	#	define F_CPU 16000000U
+#endif
+
+// TIMEOUTS
+// HOST_TIMEOUT =~250ms
+// TARGET_TIMEOUT=~100ms
+#if (F_CPU==20000000U)
+	#define HOST_TIMEOUT 19000
+	#define TARGET_TIMEOUT 7800
+#elif (F_CPU==24000000U)
+	#define HOST_TIMEOUT 23400
+	#define TARGET_TIMEOUT 9375
+#elif (F_CPU==16000000U)
+	#define HOST_TIMEOUT 15600
+	#define TARGET_TIMEOUT 6250
+#else //8000000U
+	#define HOST_TIMEOUT 7800
+	#define TARGET_TIMEOUT 3125
 #endif
 
 #ifndef UPDI_BAUD
