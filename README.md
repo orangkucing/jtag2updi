@@ -39,7 +39,7 @@ There are the following known issues:
 
 
 
-# Original Readme ( ElTangas)
+# Original Readme (ElTangas)
 
 This is a firmware, that when uploaded on an atmega328p, or a similar AVR MCU, enables it to interface with avrdude using the jtagice Mk2 protocol via a serial link. In particular, you can use an Arduino to host this firmware.
 It provides a bridge to program the new attiny817 family of MCUs, that use the UPDI interface:
