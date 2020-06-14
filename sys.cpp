@@ -52,8 +52,12 @@ void SYS::init(void) {
 	  PORT(UPDI_PORT) = 1<<UPDI_PIN;
   #endif
 
+  // Dickson charge pump - Bit 4,3,2,1: HVPWR4 Power, HVSD3 Shutdown, HVCP2 Clock, HVCP1 Clock
+  DDRB |=   0b00011110;    // configure HVPWR4, HVSD3, HVCP2, HVCP1 as outputs
+  PORTB &= ~0b00011110;    // clear HVPWR4, HVSD3, HVCP2, HVCP1
+  PORTB |=  0b00001000;    // set HVSD3
 
-  DDR(LED_PORT) |= ((1 << LED_PIN) | (1 << HV_PIN));
+  DDR(LED_PORT) |= (1 << LED_PIN);
   #ifdef LED2_PORT
   DDR(LED2_PORT) |= (1 << LED2_PIN);
   #endif
@@ -84,6 +88,14 @@ void SYS::clearVerLED(void){
         #endif
 }
 
+void SYS::setHVLED(void){
+  PORT(HVLED_PORT) |= 1 << HVLED_PIN;
+}
+
+void SYS::clearHVLED(void){
+  PORT(HVLED_PORT) &= ~(1 << HVLED_PIN);
+}
+
 /*
 inline void SYS::startTimer()
 inline void SYS::stopTimer()
@@ -99,10 +111,53 @@ void SYS::clearTimeouts() {
 }
 
 void SYS::pulseHV(void) {
-  PORT(HV_PORT) |= 1 << HV_PIN;     // set HV
-  _delay_us(250);                   // duration (allowable range = 100-1000µs)
-  PORT(HV_PORT) &= ~(1 << HV_PIN);  // clear HV
-  _delay_us(8);                     // delay (allowable range = 1-10µs)
+#if defined (__AVR_ATmega_Mini__)
+  PORTB &= ~0b00001000; // clear HVSD3
+  PORTB |=  0b00010000; // set HVPWR4
+  for (int j = 0; j <= 255; j++) {
+    PORTB &= ~0b00000100; // clear HVCP2
+    PORTB |=  0b00000010; // set HVCP1
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    PORTB &= ~0b00000010; // clear HVCP1
+    PORTB |=  0b00000100; // set HVCP2
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+  }
+  PORTB &= ~0b00000100; // clear HVCP2
+  PORTB &= ~0b00010000; // clear HVPWR4
+  PORTB |=  0b00001000; // set HVSD3
+# endif
+  _delay_us(8); // delay (allowable range = 1-10µs)
 }
 
 void SYS::setPOWER(void) {

@@ -71,6 +71,9 @@ namespace {
         switch (JTAG2::packet.body[0]) {
           case JTAG2::CMND_GET_SIGN_ON:
             JTAG2::sign_on();
+             #if defined (__AVR_ATmega_Mini__)
+              if (SYS::checkHVMODE() > 100) SYS::setHVLED();
+            #endif
             break;
           case JTAG2::CMND_GET_PARAMETER:
             JTAG2::get_parameter();
@@ -115,7 +118,10 @@ namespace {
           case JTAG2::CMND_SET_DEVICE_DESCRIPTOR:
             #if defined (__AVR_ATmega_Mini__)
               if (SYS::checkHVMODE() > 200) SYS::cyclePOWER();  // if UDPI as GPIO, power-cycle target
-              if (SYS::checkHVMODE() > 100) SYS::pulseHV();    // if UDPI as GPIO or RESET, apply HV pulse
+              if (SYS::checkHVMODE() > 100) {  // if UDPI as GPIO or RESET, apply HV pulse
+                SYS::clearHVLED();
+                SYS::pulseHV();
+              }
             #endif
             JTAG2::set_device_descriptor();
             break;
@@ -184,7 +190,7 @@ namespace {
          if (SYS::checkHVMODE() > 200) SYS::cyclePOWER();  // if UDPI as GPIO, power-cycle target
        #endif
      }
-       #endif
+      #endif
     }
   }
 }

@@ -2,7 +2,7 @@
 
 ![](https://github.com/Dlloydev/jtag2updi/wiki/images/updienable.png)
 
-The Source Code was cloned from https://github.com/SpenceKonde/jtag2updi, then updated to add new features for HV programming. 
+The Source Code was cloned then updated to add new features for HV programming. 
 
 The tinyAVR® 0 series and 1-series are programmed through the Unified Program and Debug Interface (UPDI) that uses the UPDI/reset pin. Since pin is multi-functional and high voltage tolerant, if configured as Reset would require a 12V enable sequence on the pin to place it in UPDI mode and allow programming. 
 
@@ -10,9 +10,11 @@ The HV UPDI programmers ([here](https://github.com/Dlloydev/jtag2updi/wiki)) are
 
 ![](https://github.com/Dlloydev/jtag2updi/wiki/images/Protocol.png)
 
-#### [Build your own Arduino HV UPDI programmer](https://github.com/Dlloydev/jtag2updi/wiki/Arduino-Nano-HV-UPDI-Programmer)
+## [Arduino Nano HV UPDI programmer](https://github.com/Dlloydev/jtag2updi/wiki/Arduino-Nano-HV-UPDI-Programmer)
 
-#### [More ...](https://github.com/Dlloydev/jtag2updi/wiki)
+## [DIY HV UPDI programmer](https://github.com/Dlloydev/jtag2updi/wiki/DIY-HV-UPDI-Programmer)
+
+## [More ...](https://github.com/Dlloydev/jtag2updi/wiki)
 
 
 
