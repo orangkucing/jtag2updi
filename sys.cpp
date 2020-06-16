@@ -97,20 +97,6 @@ void SYS::clearHVLED(void){
   PORT(HVLED_PORT) &= ~(1 << HVLED_PIN);
 }
 
-/*
-inline void SYS::startTimer()
-inline void SYS::stopTimer()
-
-Timeout mechanisms, 5/2020, Spence Konde
-*/
-
-uint8_t SYS::checkTimeouts() {
-return TIMEOUT_REG;
-}
-void SYS::clearTimeouts() {
-  TIMEOUT_REG=WAIT_FOR_HOST|WAIT_FOR_TARGET;
-}
-
 void SYS::pulseHV(void) {
 #if defined (__AVR_ATmega_Mini__)
   PORTB &= ~0b00001000; // clear HVSD3
