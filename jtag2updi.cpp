@@ -55,7 +55,6 @@ namespace {
     _delay_us(500);
     UPDI_io::put(UPDI::SYNCH);
     SYS::checkOVERLOAD();
-    _delay_us(150000);
     SYS::clearHVLED();
   }
   #endif

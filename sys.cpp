@@ -53,8 +53,8 @@ void SYS::init(void) {
 	  PORT(UPDI_PORT) = 1<<UPDI_PIN;
   #endif
 
-  // Dickson charge pump - Bit 4,3,2,1: HVPWR4 Power, HVSD3 Shutdown, HVCP2 Clock, HVCP1 Clock
-  DDRB |=   0b00011110;    // configure HVPWR4, HVSD3, HVCP2, HVCP1 as outputs
+  // Dickson charge pump - Bit 4,3,2,1,0: HVPWR4 Power, HVSD3 Shutdown, HVCP2 Clock, HVCP1 Clock, HVLED
+  DDRB |=   0b00011111;    // configure HVPWR4, HVSD3, HVCP2, HVCP1, HVLED as outputs
   PORTB &= ~0b00011110;    // clear HVPWR4, HVSD3, HVCP2, HVCP1
   PORTB |=  0b00001000;    // set HVSD3
 
@@ -90,11 +90,11 @@ void SYS::clearVerLED(void){
 }
 
 void SYS::setHVLED(void){
-  PORT(HVLED_PORT) |= 1 << HVLED_PIN;
+  PORTB |=  0b00000001;
 }
 
 void SYS::clearHVLED(void){
-  PORT(HVLED_PORT) &= ~(1 << HVLED_PIN);
+  PORTB &= ~0b00000001;
 }
 
 void SYS::pulseHV(void) {

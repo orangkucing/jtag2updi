@@ -190,14 +190,6 @@
 #elif defined (__AVR_ATmega_Mini__) || defined(ARDUINO_AVR_LARDU_328E)
 // For ATmega8/88/168/328 (P, PB) parts
 
-  # ifndef HVLED_PORT
-  #   define HVLED_PORT B
-  # endif
-
-  # ifndef HVLED_PIN
-  #   define HVLED_PIN 0
-  # endif
-
 	#	ifndef HOST_USART
 	#		define HOST_USART 0
 	#	endif
