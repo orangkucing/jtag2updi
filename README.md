@@ -8,15 +8,17 @@ The tinyAVR® 0 series and 1-series are programmed through the Unified Program a
 
 ![](https://github.com/Dlloydev/jtag2updi/wiki/images/Protocol.png)
 
-The HV UPDI programmers ([here](https://github.com/Dlloydev/jtag2updi/wiki)) are open source hardware designed to work with tinyAVR® [0-series](https://www.microchip.com/design-centers/8-bit/avr-mcus/device-selection/attiny1607) and [1-series](https://www.microchip.com/design-centers/8-bit/avr-mcus/device-selection/attiny3217) MCUs,  [megaTinyCore](https://github.com/SpenceKonde/megaTinyCore) and the [Arduino IDE](https://www.arduino.cc/en/Main/Software).  These programmers allow using the additional configuration settings for the UPDI pin without the fear of getting locked out from the MCU. They work with the Arduino IDE without interfering with its normal workflow.
+The HV UPDI programmers ([here](https://github.com/Dlloydev/jtag2updi/wiki)) are open source hardware designed to work with tinyAVR® [0-series](https://www.microchip.com/design-centers/8-bit/avr-mcus/device-selection/attiny1607) and [1-series](https://www.microchip.com/design-centers/8-bit/avr-mcus/device-selection/attiny3217) MCUs,  [megaTinyCore](https://github.com/SpenceKonde/megaTinyCore)  and the [Arduino IDE](https://www.arduino.cc/en/Main/Software).  These programmers allow using the additional configuration settings for the UPDI pin without the fear of getting locked out from the MCU. They work with the Arduino IDE without interfering with its normal workflow.
 
-| [Arduino Nano HV UPDI programmer](https://github.com/Dlloydev/jtag2updi/wiki/Arduino-Nano-HV-UPDI-Programmer) | [![Click to enlarge](https://github.com/Dlloydev/jtag2updi/wiki/images/NanoProgTopSmall.png)](https://raw.githubusercontent.com/wiki/Dlloydev/jtag2updi/images/NanoProgTop.png)[![Click to enlarge](https://github.com/Dlloydev/jtag2updi/wiki/images/NanoProgBotSmall.png)](https://raw.githubusercontent.com/wiki/Dlloydev/jtag2updi/images/NanoProgBot.png) |
+| [Arduino Nano HV UPDI programmer](https://github.com/Dlloydev/jtag2updi/wiki/Arduino-Nano-HV-UPDI-Programmer) | [![Click to enlarge](https://github.com/Dlloydev/jtag2updi/wiki/images/NanoProg3Small.jpg)](https://raw.githubusercontent.com/wiki/Dlloydev/jtag2updi/images/NanoProg3Small.jpg) |
 | :----------------------------------------------------------: | :----------------------------------------------------------: |
-| **[DIY HV UPDI programmer](https://github.com/Dlloydev/jtag2updi/wiki/DIY-HV-UPDI-Programmer)** | [![Click to enlarge](https://github.com/Dlloydev/jtag2updi/wiki/images/NanoHVprogSmall.jpg)](https://raw.githubusercontent.com/wiki/Dlloydev/jtag2updi/images/NanoHVprog.jpg) |
+| **[DIY Nano HV UPDI programmer](https://github.com/Dlloydev/jtag2updi/wiki/DIY-HV-UPDI-Programmer)** | [![Click to enlarge](https://github.com/Dlloydev/jtag2updi/wiki/images/NanoHVprogSmall.jpg)](https://raw.githubusercontent.com/wiki/Dlloydev/jtag2updi/images/NanoHVprog.jpg) |
 
 ### [More ...](https://github.com/Dlloydev/jtag2updi/wiki)
 
 
+
+------
 
 # Original Readme (SpenceKonde)
 
@@ -29,7 +31,7 @@ This has also has the following additions:
 * Timeout function - a lack of messages from host for 250ms or the target failing to send an expected response for 100ms will result in a timeout. Timeouts from target are reported to host. Timeouts waiting for host will lead to it attempting to reset a failed status message (on the grounds that "maybe it didn't get through". Four consecutive timeouts waiting for host will cause it to reset to it's initial state and await a new attempt at communication from the host. 
 * Improve write speed by disabling the response signature during burst writes (NO_ACK_WRITE).
 * Add debug channel via SPI or second USART to provide rich debugging output.
-* Add support for running on addittional processors: 40/44 pin ATmega parts (ones supported by MightyCore), 64/100-pin ATmega parts (ones supported by MegaCore), 28/32-pin ATmega parts (ones supported by MiniCore), and megaAVR 0-series parts (supported by MegaCoreX). The tinyAVR 0-series and 1-series parts (supported by megaTinyCore) are also supported.
+* Add support for running on additional processors: 40/44 pin ATmega parts (ones supported by MightyCore), 64/100-pin ATmega parts (ones supported by MegaCore), 28/32-pin ATmega parts (ones supported by MiniCore), and megaAVR 0-series parts (supported by MegaCoreX). The tinyAVR 0-series and 1-series parts (supported by megaTinyCore) are also supported.
 
 ## Known issues
 There are the following known issues:
@@ -50,7 +52,7 @@ avrdude -> HW Serial interface -> Programmer MCU (e.g. Mega328P) -> SW Serial on
 
 Currently, I have not tested this software with a level shifter, however, since the UPDI pin is high voltage tolerant, it's ok to have V_prog > V_target, but not the reverse.
 
-Notice, however, that the logic levels need to be compatible for successful programming: V_target cannot be lower than about 60% of V_prog (60% will likelly work, 70% is guaranteed to work). Therefore, it will not be possible to program a 2.5V target with a 5.0V programmer, because communication errors will surely occur (but no electrical damage), but if V_target is 3.3V (66% of 5.0V) chances are good.
+Notice, however, that the logic levels need to be compatible for successful programming: V_target cannot be lower than about 60% of V_prog (60% will likely work, 70% is guaranteed to work). Therefore, it will not be possible to program a 2.5V target with a 5.0V programmer, because communication errors will surely occur (but no electrical damage), but if V_target is 3.3V (66% of 5.0V) chances are good.
 
 <pre>
                                             V_prog                 V_target
@@ -75,7 +77,7 @@ Drawing adapted from: https://github.com/mraardvark/pyupdi
 If you use an Arduino as host for this program, be sure that, after burning the software, you disable its auto-reset feature, using one of the techniques described here:
 https://playground.arduino.cc/Main/DisablingAutoResetOnSerialConnection
 
-Alternatively, you can use an Arduino without integrated USB/serial adapter, like the pro-mini; in that case, just disconecting the DTR wire will disable the auto-reset. Just remember the UPDI chip must be connected to the same supply voltage as the Arduino's MCU!
+Alternatively, you can use an Arduino without integrated USB/serial adapter, like the pro-mini; in that case, just disconnecting the DTR wire will disable the auto-reset. Just remember the UPDI chip must be connected to the same supply voltage as the Arduino's MCU!
 
 
 ## Building with Arduino IDE
