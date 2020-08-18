@@ -67,9 +67,19 @@
 	#define LED_PORT A
 	#define LED_PIN 7
 
-	// Second LED is used to indicate NVM version, or as an additional debugging aid.
-	#define LED2_PORT A
-	#define LED2_PIN 6
+  #if (defined(__AVR_ATtiny1604__) || defined(__AVR_ATtiny1614__))
+  // Dickson charge pump
+  # define cpp PIN3_bm // charge pump power, PA3
+  # define cp1 PIN4_bm // charge pump clock 1, PA4
+  # define cp2 PIN5_bm // charge pump clock 2, PA5
+  # define cps PIN6_bm // charge pump shutdown, PA6
+
+  #else
+  // Second LED is used to indicate NVM version, or as an additional debugging aid.
+  # define LED2_PORT A
+  # define LED2_PIN 6
+
+#endif
 
   //USARTDEBUG not practical here because only one UART.
 //	#define USE_SPIDEBUG
@@ -131,6 +141,14 @@
 #if defined(__AVR_ATtiny_Zero_One__)
 // tinyAVR 0-series and 1-series parts
 
+  # ifndef HVLED_PORT
+  #   define HVLED_PORT B
+  # endif
+
+  # ifndef HVLED_PIN
+  #   define HVLED_PIN 1
+  # endif
+
 	#	ifndef UPDI_PORT
 	#		define UPDI_PORT B
 	#	endif
@@ -189,6 +207,14 @@
 
 #elif defined (__AVR_ATmega_Mini__) || defined(ARDUINO_AVR_LARDU_328E)
 // For ATmega8/88/168/328 (P, PB) parts
+
+  # ifndef HVLED_PORT
+  #   define HVLED_PORT B
+  # endif
+
+  # ifndef HVLED_PIN
+  #   define HVLED_PIN 0
+  # endif
 
 	#	ifndef HOST_USART
 	#		define HOST_USART 0
@@ -259,37 +285,36 @@
 #elif defined (__AVR_ATmega_Zero__ ) || defined( __AVR_DA__)
 // 4808, 4809. and the rest of the megaAVR 0-series
 
-
 	#	ifndef UPDI_PORT
-	#		define UPDI_PORT B
+	#		define UPDI_PORT F
 	#	endif
 
 	#	ifndef UPDI_PIN
-	#		define UPDI_PIN 0
+	#		define UPDI_PIN 4
 	#	endif
 
 	#	ifndef LED_PORT
-	#		define LED_PORT B
+	#		define LED_PORT E
 	#	endif
 
 	#	ifndef LED_PIN
-	#		define LED_PIN 1
+	#		define LED_PIN 2
 	#	endif
 
 	#	ifndef HOST_USART
-	#		define HOST_USART USART0
+	#		define HOST_USART USART3
 	#	endif
 
 	#	ifndef HOST_TX_PORT
-	#		define HOST_TX_PORT A
+	#		define HOST_TX_PORT B
 	#	endif
 
 	#	ifndef HOST_TX_PIN
-	#		define HOST_TX_PIN 0
+	#		define HOST_TX_PIN 4
 	#	endif
 
 	#	ifndef HOST_RX_PIN
-	#		define HOST_RX_PIN 1
+	#		define HOST_RX_PIN 5
 	#	endif
 
 #else

@@ -4,7 +4,7 @@
 
 This Source Code was cloned then updated to add new features for HV programming. 
 
-The tinyAVR® 0 series and 1-series are programmed through the Unified Program and Debug Interface (UPDI) that uses the UPDI/reset pin.
+The tinyAVR® 0-series and 1-series are programmed through the Unified Program and Debug Interface (UPDI) that uses the UPDI/reset pin.
 
 ![](https://github.com/Dlloydev/jtag2updi/wiki/images/Protocol.png)
 
@@ -12,6 +12,7 @@ The HV UPDI programmers ([here](https://github.com/Dlloydev/jtag2updi/wiki)) are
 
 | [Arduino Nano HV UPDI programmer](https://github.com/Dlloydev/jtag2updi/wiki/Arduino-Nano-HV-UPDI-Programmer) | [![Click to enlarge](https://github.com/Dlloydev/jtag2updi/wiki/images/NanoProg3Small.jpg)](https://raw.githubusercontent.com/wiki/Dlloydev/jtag2updi/images/NanoProg3Small.jpg) |
 | :----------------------------------------------------------: | :----------------------------------------------------------: |
+| **[DIY ATtiny HV UPDI programmer](https://github.com/Dlloydev/jtag2updi/wiki/DIY-ATtiny-HV-UPDI-Programmer)** | [![Click to enlarge](https://github.com/Dlloydev/jtag2updi/wiki/images/ATtiny16x4PinoutSmall.gif)](https://raw.githubusercontent.com/wiki/Dlloydev/jtag2updi/images/ATtiny16x4PinoutSmall.gif) |
 | **[DIY Nano HV UPDI programmer](https://github.com/Dlloydev/jtag2updi/wiki/DIY-HV-UPDI-Programmer)** | [![Click to enlarge](https://github.com/Dlloydev/jtag2updi/wiki/images/NanoHVprogSmall.jpg)](https://raw.githubusercontent.com/wiki/Dlloydev/jtag2updi/images/NanoHVprog.jpg) |
 
 ### [More ...](https://github.com/Dlloydev/jtag2updi/wiki)
