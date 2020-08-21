@@ -70,7 +70,7 @@ void SYS::init(void) {
   PORTB &= ~0b00011110;    // clear HVPWR4, HVSD3, HVCP2, HVCP1
   PORTB |=  0b00001000;    // set HVSD3
 
-  #elif (defined(__AVR_ATtiny1604__) || defined(__AVR_ATtiny1614__))
+  #elif defined (__AVR_ATtiny_Zero_One__)
   // Output Pins
   PORTA.DIRSET |= PIN2_bm | cpp | cp1 |cp2 | cps | PIN7_bm; // Power Switch, Charge Pump (4 pins), LED
   PORTB.DIRSET |= PIN1_bm; // HVLED
@@ -111,7 +111,7 @@ void SYS::pulseHV(void) {
 #if defined (__AVR_ATmega328P__)
   PORTB &= ~0b00001000; // clear HVSD3
   PORTB |=  0b00010000; // set HVPWR4
-#elif (defined(__AVR_ATtiny1604__) || defined(__AVR_ATtiny1614__))
+#elif defined (__AVR_ATtiny_Zero_One__)
   PORTA.OUTCLR &= cps; // disable shutdown
   PORTA.OUTSET |= cpp; // turn on power
 #endif
@@ -119,7 +119,7 @@ void SYS::pulseHV(void) {
 #if defined (__AVR_ATmega328P__)
     PORTB &= ~0b00000100; // clear HVCP2
     PORTB |=  0b00000010; // set HVCP1
-#elif (defined(__AVR_ATtiny1604__) || defined(__AVR_ATtiny1614__))
+#elif defined (__AVR_ATtiny_Zero_One__)
     PORTA.OUTCLR &= cp2;
     PORTA.OUTSET |= cp1;
 #endif
@@ -150,7 +150,7 @@ void SYS::pulseHV(void) {
 #if defined (__AVR_ATmega328P__)
     PORTB &= ~0b00000010; // clear HVCP1
     PORTB |=  0b00000100; // set HVCP2
-#elif (defined(__AVR_ATtiny1604__) || defined(__AVR_ATtiny1614__))
+#elif defined (__AVR_ATtiny_Zero_One__)
     PORTA.OUTCLR &= cp1;
     PORTA.OUTSET |= cp2;
 #endif
@@ -168,7 +168,7 @@ void SYS::pulseHV(void) {
   PORTB &= ~0b00000100; // clear HVCP2
   PORTB &= ~0b00010000; // clear HVPWR4
   PORTB |=  0b00001000; // set HVSD3
-#elif (defined(__AVR_ATtiny1604__) || defined(__AVR_ATtiny1614__))
+#elif defined (__AVR_ATtiny_Zero_One__)
   PORTA.OUTCLR &= cp2;  // default
   PORTA.OUTCLR &= cpp;  // turn off power
   PORTA.OUTSET |= cps;  // enable shutdown
@@ -180,7 +180,7 @@ void SYS::setPOWER(void) {
 #if defined (__AVR_ATmega328P__)
   DDRC |= 0b00111111;   // enable pullups
   PORTC |= 0b00111111;  // set as outputs
-#elif (defined(__AVR_ATtiny1604__) || defined(__AVR_ATtiny1614__))
+#elif defined (__AVR_ATtiny_Zero_One__)
   PORTA.OUTSET |= PIN2_bm;  // PA2 high
 #endif
   _delay_us(10);
@@ -190,7 +190,7 @@ void SYS::clearPOWER(void) {
 #if defined (__AVR_ATmega328P__)
   DDRC &= 0b11000000;   // disable pullups
   PORTC &= 0b11000000;  // set as inputs
-#elif (defined(__AVR_ATtiny1604__) || defined(__AVR_ATtiny1614__))
+#elif defined (__AVR_ATtiny_Zero_One__)
   PORTA.OUTCLR |= PIN2_bm;  // PA2 low
 #endif
 }
@@ -233,7 +233,7 @@ uint8_t SYS::checkHVMODE() {                         // Check HV Programming Mod
   ADCSRA  |= (1 << ADSC);                            // start a conversion
   while (ADCSRA &  (1 << ADSC));                     // wait while busy
   return ADCH;                                       // return HV mode jumper setting
-#elif (defined(__AVR_ATtiny1604__) || defined(__AVR_ATtiny1614__))
+#elif defined (__AVR_ATtiny_Zero_One__)
   PORTA_PIN1CTRL = 0x04;                             // disable digital input buffer for PA1
   ADC0_CTRLA = ADC_RESSEL_8BIT_gc;                   // 8-bit resolution
   ADC0_CTRLC = 0x54;                                 // reduced capacitance, Vdd ref, prescaler of 32
