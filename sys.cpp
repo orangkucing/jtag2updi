@@ -63,7 +63,6 @@ void SYS::init(void) {
   DBG::debug(0x18,0xC0,0xFF, 0xEE);
   #endif
 
-
   #if defined (__AVR_ATmega328P__)
   // Dickson charge pump - Bit 4,3,2,1,0: HVPWR4 Power, HVSD3 Shutdown, HVCP2 Clock, HVCP1 Clock, HVLED
   DDRB |=   0b00011111;    // configure HVPWR4, HVSD3, HVCP2, HVCP1, HVLED as outputs
@@ -72,11 +71,16 @@ void SYS::init(void) {
 
   #elif defined (__AVR_ATtiny_Zero_One__)
   // Output Pins
-  PORTA.DIRSET |= PIN2_bm | cpp | cp1 |cp2 | cps | PIN7_bm; // Power Switch, Charge Pump (4 pins), LED
+  PORTA.DIRSET |= PIN2_bm | cpp | PIN7_bm; // Power Switch, Charge Pump Power, LED
   PORTB.DIRSET |= PIN1_bm; // HVLED
   // Set Outputs High
-  PORTA.OUTSET |= PIN2_bm | cps; // enable power switch and charge pump shutdown
+  PORTA.OUTSET |= PIN2_bm; // enable power switch
+    #if ((not defined (__AVR_ATtiny1604__)) || (not defined (__AVR_ATtiny1614__)))
+    PORTA.DIRSET |= cp1 |cp2 | cps; // set charge pump clock1, clock2 and shutdown pins as output
+    PORTA.OUTSET |= cps; // enable charge pump shutdown
+    #endif
   #endif
+
 }
 
 void SYS::setLED(void){
@@ -112,7 +116,9 @@ void SYS::pulseHV(void) {
   PORTB &= ~0b00001000; // clear HVSD3
   PORTB |=  0b00010000; // set HVPWR4
 #elif defined (__AVR_ATtiny_Zero_One__)
+  #if ((not defined (__AVR_ATtiny1604__)) || (not defined (__AVR_ATtiny1614__)))
   PORTA.OUTCLR &= cps; // disable shutdown
+  #endif
   PORTA.OUTSET |= cpp; // turn on power
 #endif
   for (int j = 0; j <= 255; j++) {
@@ -120,8 +126,10 @@ void SYS::pulseHV(void) {
     PORTB &= ~0b00000100; // clear HVCP2
     PORTB |=  0b00000010; // set HVCP1
 #elif defined (__AVR_ATtiny_Zero_One__)
+  #if ((not defined (__AVR_ATtiny1604__)) || (not defined (__AVR_ATtiny1614__)))
     PORTA.OUTCLR &= cp2;
     PORTA.OUTSET |= cp1;
+  #endif
 #endif
     __asm__ __volatile__("nop");
     __asm__ __volatile__("nop");
@@ -151,8 +159,10 @@ void SYS::pulseHV(void) {
     PORTB &= ~0b00000010; // clear HVCP1
     PORTB |=  0b00000100; // set HVCP2
 #elif defined (__AVR_ATtiny_Zero_One__)
+  #if ((not defined (__AVR_ATtiny1604__)) || (not defined (__AVR_ATtiny1614__)))
     PORTA.OUTCLR &= cp1;
     PORTA.OUTSET |= cp2;
+  #endif
 #endif
     __asm__ __volatile__("nop");
     __asm__ __volatile__("nop");
@@ -169,9 +179,13 @@ void SYS::pulseHV(void) {
   PORTB &= ~0b00010000; // clear HVPWR4
   PORTB |=  0b00001000; // set HVSD3
 #elif defined (__AVR_ATtiny_Zero_One__)
+  #if ((not defined (__AVR_ATtiny1604__)) || (not defined (__AVR_ATtiny1614__)))
   PORTA.OUTCLR &= cp2;  // default
+  #endif
   PORTA.OUTCLR &= cpp;  // turn off power
+  #if ((not defined (__AVR_ATtiny1604__)) || (not defined (__AVR_ATtiny1614__)))
   PORTA.OUTSET |= cps;  // enable shutdown
+  #endif
 #endif
   _delay_us(8); // delay (allowable range = 1-10µs)
 }
