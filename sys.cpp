@@ -72,7 +72,7 @@ void SYS::init(void) {
   #elif defined (__AVR_ATtiny_Zero_One__)
   // Output Pins
   PORTA.DIRSET |= PIN2_bm | cpp | PIN7_bm; // Power Switch, Charge Pump Power - HV enable, LED
-  PORTB.DIRSET |= PIN1_bm; // HVLED
+  PORTA.DIRSET |= PIN6_bm; // HVLED
   // Set Outputs High
   PORTA.OUTSET |= PIN2_bm; // enable power switch
     #if (defined (__AVR_ATtiny1604__) || defined (__AVR_ATtiny1614__))

@@ -141,11 +141,11 @@
 // tinyAVR 0-series and 1-series parts
 
   # ifndef HVLED_PORT
-  #   define HVLED_PORT B
+  #   define HVLED_PORT A
   # endif
 
   # ifndef HVLED_PIN
-  #   define HVLED_PIN 1
+  #   define HVLED_PIN 6
   # endif
 
 	#	ifndef UPDI_PORT
