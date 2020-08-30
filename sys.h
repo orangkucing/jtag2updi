@@ -67,18 +67,15 @@
 	#define LED_PORT A
 	#define LED_PIN 7
 
-  // Dickson charge pump
+  // Dickson charge pump pins
   # define cpp PIN3_bm // charge pump power or HV Enable, PA3
-    #if (defined (__AVR_ATtiny1604__) || defined (__AVR_ATtiny1614__))
-    #else
-      # define cp1 PIN4_bm // charge pump clock 1, PA4
-      # define cp2 PIN5_bm // charge pump clock 2, PA5
-      # define cps PIN4_bm // charge pump shutdown, PB4
-    #endif
+  # define cp1 PIN4_bm // charge pump clock 1, PA4
+  # define cp2 PIN5_bm // charge pump clock 2, PA5
+  # define cps PIN1_bm // charge pump shutdown, PB1
 
   //Second LED is used to indicate NVM version, or as an additional debugging aid.
-   # define LED2_PORT A
-   # define LED2_PIN 6
+  # define LED2_PORT A
+  # define LED2_PIN 6
 
   //USARTDEBUG not practical here because only one UART.
 //	#define USE_SPIDEBUG
