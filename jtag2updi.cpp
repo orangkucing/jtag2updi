@@ -46,7 +46,7 @@ inline void setup() {
 
 
 inline void loop() {
-#if (defined (__AVR_ATmega328P__) || defined(__AVR_ATtiny1604__) || defined(__AVR_ATtiny1614__))
+#if (defined (__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__ ) || defined( __AVR_DA__))
   SYS::setPOWER();
   if (SYS::checkHVMODE() > 100) {  // if UDPI as GPIO or RESET, apply HV pulse
     SYS::setHVLED();
@@ -123,7 +123,7 @@ inline void process_command() {
   switch (JTAG2::packet.body[0]) {
     case JTAG2::CMND_GET_SIGN_ON:
       JTAG2::sign_on();
-#if (defined (__AVR_ATmega328P__) || defined(__AVR_ATtiny1604__) || defined(__AVR_ATtiny1614__))
+#if (defined (__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__ ) || defined( __AVR_DA__))
       if (SYS::checkHVMODE() > 100) SYS::setHVLED();
 #endif
       break;
@@ -153,7 +153,7 @@ inline void process_command() {
       }
       JTAG2::ConnectedTo &= 0xFD; // no longer talking to host either, anymore.
       set_status(JTAG2::RSP_OK);
-#if (defined (__AVR_ATmega328P__) || defined(__AVR_ATtiny1604__) || defined(__AVR_ATtiny1614__))
+#if (defined (__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__ ) || defined( __AVR_DA__))
       if (SYS::checkHVMODE() > 200) SYS::cyclePOWER();  // if UDPI as GPIO, power-cycle target
 #endif
       break;
@@ -170,7 +170,7 @@ inline void process_command() {
       JTAG2::go();
       break;
     case JTAG2::CMND_SET_DEVICE_DESCRIPTOR:
-#if (defined (__AVR_ATmega328P__) || defined(__AVR_ATtiny1604__) || defined(__AVR_ATtiny1614__))
+#if (defined (__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__ ) || defined( __AVR_DA__))
       if (SYS::checkHVMODE() > 200) SYS::cyclePOWER();  // if UDPI as GPIO, power-cycle target
       if (SYS::checkHVMODE() > 100) {  // if UDPI as GPIO or RESET, apply HV pulse
         SYS::clearHVLED();

@@ -67,15 +67,15 @@
 	#define LED_PORT A
 	#define LED_PIN 7
 
+  //Second LED is used to indicate NVM version, or as an additional debugging aid.
+  # define LED2_PORT A
+  # define LED2_PIN 6
+
   // Dickson charge pump pins
   # define cpp PIN3_bm // charge pump power or HV Enable, PA3
   # define cp1 PIN4_bm // charge pump clock 1, PA4
   # define cp2 PIN5_bm // charge pump clock 2, PA5
   # define cps PIN1_bm // charge pump shutdown, PB1
-
-  //Second LED is used to indicate NVM version, or as an additional debugging aid.
-  # define LED2_PORT A
-  # define LED2_PIN 6
 
   //USARTDEBUG not practical here because only one UART.
 //	#define USE_SPIDEBUG
@@ -125,6 +125,19 @@
 //	#define USE_USARTDEBUG
 //	#define DEBUG_USART USART1
 //	#define DEBUG_BAUDRATE 2000000UL
+
+  #define LED_PORT A
+  #define LED_PIN 7
+
+  //Second LED is used to indicate NVM version, or as an additional debugging aid.
+  # define LED2_PORT A
+  # define LED2_PIN 6
+
+  // Dickson charge pump pins
+  # define cpp PIN0_bm // charge pump power or HV Enable, PC0
+  # define cp1 PIN1_bm // charge pump clock 1, PC1
+  # define cp2 PIN2_bm // charge pump clock 2, PC2
+  # define cps PIN3_bm // charge pump shutdown, PC3
 
 #endif
 
@@ -281,36 +294,44 @@
 #elif defined (__AVR_ATmega_Zero__ ) || defined( __AVR_DA__)
 // 4808, 4809. and the rest of the megaAVR 0-series
 
+  # ifndef HVLED_PORT
+  #   define HVLED_PORT A
+  # endif
+
+  # ifndef HVLED_PIN
+  #   define HVLED_PIN 6
+  # endif
+
 	#	ifndef UPDI_PORT
-	#		define UPDI_PORT F
+	#		define UPDI_PORT A
 	#	endif
 
 	#	ifndef UPDI_PIN
-	#		define UPDI_PIN 4
+	#		define UPDI_PIN 3
 	#	endif
 
 	#	ifndef LED_PORT
-	#		define LED_PORT E
+	#		define LED_PORT A
 	#	endif
 
 	#	ifndef LED_PIN
-	#		define LED_PIN 2
+	#		define LED_PIN 7
 	#	endif
 
 	#	ifndef HOST_USART
-	#		define HOST_USART USART3
+	#		define HOST_USART USART0
 	#	endif
 
 	#	ifndef HOST_TX_PORT
-	#		define HOST_TX_PORT B
+	#		define HOST_TX_PORT A
 	#	endif
 
 	#	ifndef HOST_TX_PIN
-	#		define HOST_TX_PIN 4
+	#		define HOST_TX_PIN 0
 	#	endif
 
 	#	ifndef HOST_RX_PIN
-	#		define HOST_RX_PIN 5
+	#		define HOST_RX_PIN 1
 	#	endif
 
 #else
