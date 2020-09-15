@@ -85,7 +85,7 @@
   #define SPIPRESC (SPI_CLK2X_bm|SPI_PRESC1_bm)
 
 
-#elif defined( __AVR_ATmega_Mighty__ )
+#elif defined(__AVR_ATmega_Mighty__)
 	// For ATmega16, 32, ... 128 and the later x4 parts (up to the 1284P).
 	// On the ones with two USARTS, you can use USART debugging.
 	//
@@ -99,7 +99,7 @@
 
 
 
-#elif defined (__AVR_ATmega_Mini__) || defined(ARDUINO_AVR_LARDU_328E)
+#elif defined(__AVR_ATmega_Mini__) || defined(ARDUINO_AVR_LARDU_328E)
 	// For ATmega8/88/168/328 (P, PB) parts
 	// Same deal as before/ Remember that the buildin LED is on the same pin as SCK on most boards, so you'll want to cadd LEDs on other pinn, defaults to D2
 	// On PB parts can also use second USART. Using the second SPI is not supported.
@@ -110,7 +110,7 @@
 
 
 
-#elif defined (__AVR_ATmega_Mega__)
+#elif defined(__AVR_ATmega_Mega__)
 	// 2560 and that family, like the ones used on the Arduino Mega
 	// Same as the others with extra USARTS, only here you can specify which one if you must
 	// #define USE_USARTDEBUG
@@ -118,7 +118,7 @@
 	// Can even change the host USART if you want
 
 
-#elif defined (__AVR_ATmega_Zero__ ) || defined( __AVR_DA__)
+#elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
 // 4808, 4809. and the rest of the megaAVR 0-series
 // Same as above, pretty much
 // big difference here is your specify the name of the peripheral instead of the number, and the target baud rate, because we grab the OSCCAL value per datasheet./
@@ -190,7 +190,7 @@
 	#		define HOST_RX_PIN 3
 	#	endif
 
-#elif defined( __AVR_ATmega_Mighty__ )
+#elif defined(__AVR_ATmega_Mighty__)
 // For ATmega16, 32, ... 128 and the later x4 parts (up to the 1284P).
 
 	#	ifndef HOST_USART
@@ -214,7 +214,7 @@
 	#	endif
 
 
-#elif defined (__AVR_ATmega_Mini__) || defined(ARDUINO_AVR_LARDU_328E)
+#elif defined(__AVR_ATmega_Mini__) || defined(ARDUINO_AVR_LARDU_328E)
 // For ATmega8/88/168/328 (P, PB) parts
 
   # ifndef HVLED_PORT
@@ -267,7 +267,7 @@
 	
 	#endif
 
-#elif defined (__AVR_ATmega_Mega__)
+#elif defined(__AVR_ATmega_Mega__)
 // 2560 and that family, like the ones used on the Arduino Mega
 
 	#	ifndef HOST_USART
@@ -291,7 +291,7 @@
 	#	endif
 
 
-#elif defined (__AVR_ATmega_Zero__ ) || defined( __AVR_DA__)
+#elif defined(__AVR_ATmega_Zero__) || defined( __AVR_DA__)
 // 4808, 4809. and the rest of the megaAVR 0-series
 
   # ifndef HVLED_PORT

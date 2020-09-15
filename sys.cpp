@@ -63,13 +63,13 @@ void SYS::init(void) {
   DBG::debug(0x18,0xC0,0xFF, 0xEE);
   #endif
 
-  #if defined (__AVR_ATmega328P__)
+  #if defined(__AVR_ATmega328P__)
   // Dickson charge pump - Bit 4,3,2,1,0: HVPWR4 Power, HVSD3 Shutdown, HVCP2 Clock, HVCP1 Clock, HVLED
   DDRB |=   0b00011111;    // configure HVPWR4, HVSD3, HVCP2, HVCP1, HVLED as outputs
   PORTB &= ~0b00011110;    // clear HVPWR4, HVSD3, HVCP2, HVCP1
   PORTB |=  0b00001000;    // set HVSD3
 
-  #elif defined (__AVR_ATtiny_Zero_One__)
+  #elif defined(__AVR_ATtiny_Zero_One__)
   // Output Pins
   PORTA.DIRSET |= PIN2_bm | cpp | PIN6_bm | PIN7_bm; // Power Switch, ChargePumpPower-HVenable, LED2-HVLED, LED
   PORTA.OUTSET |= PIN2_bm;  // enable power switch
@@ -77,7 +77,7 @@ void SYS::init(void) {
   PORTB.DIRSET |= cps;      // set charge pump shutdown pin as output
   PORTB.OUTSET |= cps;      // enable charge pump shutdown
 
-  #elif defined (__AVR_ATmega_Zero__ ) || defined( __AVR_DA__)
+  #elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
   // Output Pins
   PORTA.DIRSET |= PIN2_bm | PIN6_bm | PIN7_bm; // Power Switch, LED2-HVLED, LED
   PORTA.OUTSET |= PIN2_bm;  // enable power switch
@@ -97,15 +97,15 @@ void SYS::clearLED(void){
 }
 
 void SYS::setVerLED(void){
-        #ifdef LED2_PORT
-        PORT(LED2_PORT) |= 1 << LED2_PIN;
-        #endif
+  #ifdef LED2_PORT
+  PORT(LED2_PORT) |= 1 << LED2_PIN;
+  #endif
 }
 
 void SYS::clearVerLED(void){
-        #ifdef LED2_PORT
-        PORT(LED2_PORT) &= ~(1 << LED2_PIN);
-        #endif
+  #ifdef LED2_PORT
+  PORT(LED2_PORT) &= ~(1 << LED2_PIN);
+  #endif
 }
 
 void SYS::setHVLED(void){
@@ -117,24 +117,24 @@ void SYS::clearHVLED(void){
 }
 
 void SYS::pulseHV(void) {
-#if defined (__AVR_ATmega328P__)
+#if defined(__AVR_ATmega328P__)
   PORTB &= ~0b00001000; // clear HVSD3
   PORTB |=  0b00010000; // set HVPWR4
-#elif defined (__AVR_ATtiny_Zero_One__)
+#elif defined(__AVR_ATtiny_Zero_One__)
   PORTB.OUTCLR &= cps; // disable shutdown
   PORTA.OUTSET |= cpp; // turn on power
-#elif defined (__AVR_ATmega_Zero__ ) || defined( __AVR_DA__)
+#elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
   PORTC.OUTCLR &= cps; // disable shutdown
   PORTA.OUTSET |= cpp; // turn on power
 #endif
   for (int j = 0; j <= 255; j++) {
-#if defined (__AVR_ATmega328P__)
+#if defined(__AVR_ATmega328P__)
     PORTB &= ~0b00000100; // clear HVCP2
     PORTB |=  0b00000010; // set HVCP1
 #elif defined (__AVR_ATtiny_Zero_One__)
     PORTA.OUTCLR &= cp2;
     PORTA.OUTSET |= cp1;
-#elif defined (__AVR_ATmega_Zero__ ) || defined( __AVR_DA__)
+#elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
     PORTC.OUTCLR &= cp2;
     PORTC.OUTSET |= cp1;
 #endif
@@ -162,13 +162,13 @@ void SYS::pulseHV(void) {
     __asm__ __volatile__("nop");
     __asm__ __volatile__("nop");
     __asm__ __volatile__("nop");
-#if defined (__AVR_ATmega328P__)
+#if defined(__AVR_ATmega328P__)
     PORTB &= ~0b00000010; // clear HVCP1
     PORTB |=  0b00000100; // set HVCP2
-#elif defined (__AVR_ATtiny_Zero_One__)
+#elif defined(__AVR_ATtiny_Zero_One__)
     PORTA.OUTCLR &= cp1;
     PORTA.OUTSET |= cp2;
-#elif defined (__AVR_ATmega_Zero__ ) || defined( __AVR_DA__)
+#elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
     PORTC.OUTCLR &= cp1;
     PORTC.OUTSET |= cp2;
 #endif
@@ -182,15 +182,15 @@ void SYS::pulseHV(void) {
     __asm__ __volatile__("nop");
     __asm__ __volatile__("nop");
   }
-#if defined (__AVR_ATmega328P__)
+#if defined(__AVR_ATmega328P__)
   PORTB &= ~0b00000100; // clear HVCP2
   PORTB &= ~0b00010000; // clear HVPWR4
   PORTB |=  0b00001000; // set HVSD3
-#elif defined (__AVR_ATtiny_Zero_One__)
+#elif defined(__AVR_ATtiny_Zero_One__)
   PORTA.OUTCLR &= cp2;  // default
   PORTA.OUTCLR &= cpp;  // turn off power
   PORTB.OUTSET |= cps;  // enable shutdown
-#elif defined (__AVR_ATmega_Zero__ ) || defined( __AVR_DA__)
+#elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
   PORTC.OUTCLR &= cp2;  // default
   PORTC.OUTCLR &= cpp;  // turn off power
   PORTC.OUTSET |= cps;  // enable shutdown
@@ -199,20 +199,20 @@ void SYS::pulseHV(void) {
 }
 
 void SYS::setPOWER(void) {
-#if defined (__AVR_ATmega328P__)
+#if defined(__AVR_ATmega328P__)
   DDRC |= 0b00111111;   // enable pullups
   PORTC |= 0b00111111;  // set as outputs
-#elif defined (__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__ ) || defined( __AVR_DA__)
+#elif defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
   PORTA.OUTSET |= PIN2_bm;  // PA2 high
 #endif
   _delay_us(10);
 }
 
 void SYS::clearPOWER(void) {
-#if defined (__AVR_ATmega328P__)
+#if defined(__AVR_ATmega328P__)
   DDRC &= 0b11000000;   // disable pullups
   PORTC &= 0b11000000;  // set as inputs
-#elif defined (__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__ ) || defined( __AVR_DA__)
+#elif defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
   PORTA.OUTCLR |= PIN2_bm;  // PA2 low
 #endif
 }
@@ -225,7 +225,7 @@ void SYS::cyclePOWER(void) {
 }
 
 void SYS::checkOVERLOAD(void) {                      // Use A6 to sense overload on A0-A5 (target power)
-#if defined (__AVR_ATmega328P__)                     // Arduino Nano
+#if defined(__AVR_ATmega328P__)                      // Arduino Nano
   ADCSRA = (1 << ADEN);                              // turn ADC on
   ADCSRA |= (1 << ADPS0) | (1 << ADPS2);             // prescaler of 32
   ADMUX = (1 << REFS0) | (1 << ADLAR) | (6 & 0x07);  // AVcc reference, 8-bit result, select A6
@@ -235,9 +235,9 @@ void SYS::checkOVERLOAD(void) {                      // Use A6 to sense overload
     while (ADCSRA &  (1 << ADSC));                   // wait while busy
     sum += ADCH;                                     // totalize ADC result
   }
-#elif defined (__AVR_ATmega_Zero__ ) || defined( __AVR_DA__)
+#elif defined(__AVR_ATmega_Zero__ ) || defined(__AVR_DA__)
   PORTD_PIN6CTRL = 0x04;                             // disable digital input buffer on PD6
-  //ADC0_CTRLA = ADC_RESSEL_8BIT_gc;                   // 8-bit resolution
+  ADC0_CTRLA = ADC_RESSEL_8BIT_gc;                   // 8-bit resolution
   ADC0_CTRLC = 0x54;                                 // reduced capacitance, Vdd ref, prescaler of 32
   ADC0_MUXPOS = 0x06;                                // select AIN6
   ADC0_CTRLA |= ADC_ENABLE_bm;                       // turn ADC on
@@ -248,7 +248,7 @@ void SYS::checkOVERLOAD(void) {                      // Use A6 to sense overload
     sum += ADC0_RESL;                                // totalize ADC result
   }
 # endif
-#if defined (__AVR_ATmega328P__) || defined(__AVR_ATmega_Zero__ ) || defined( __AVR_DA__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
   if ((sum / 250) <= 230) {                          // if voltage on shorted A0-A5 outputs <= 4.5V
     while (1) {                                      // OVERLOAD (fix circuit then press Reset)
       clearPOWER();                                  // turn off target power then flash LED at 4Hz
@@ -262,14 +262,14 @@ void SYS::checkOVERLOAD(void) {                      // Use A6 to sense overload
 }
 
 uint8_t SYS::checkHVMODE() {                         // Check HV Programming Mode Switch
-#if defined (__AVR_ATmega328P__)                     // Arduino Nano
+#if defined(__AVR_ATmega328P__)                      // Arduino Nano
   ADCSRA =  (1 << ADEN);                             // turn ADC on
   ADCSRA |= (1 << ADPS0) | (1 << ADPS2);             // prescaler of 32
   ADMUX = (1 << REFS0) | (1 << ADLAR) | (7 & 0x07);  // use AVcc reference, 8-bit result, select A7
   ADCSRA  |= (1 << ADSC);                            // start a conversion
   while (ADCSRA &  (1 << ADSC));                     // wait while busy
   return ADCH;                                       // return HV mode jumper setting
-#elif defined (__AVR_ATtiny_Zero_One__)
+#elif defined(__AVR_ATtiny_Zero_One__)
   PORTA_PIN1CTRL = 0x04;                             // disable digital input buffer for PA1
   ADC0_CTRLA = ADC_RESSEL_8BIT_gc;                   // 8-bit resolution
   ADC0_CTRLC = 0x54;                                 // reduced capacitance, Vdd ref, prescaler of 32
@@ -278,9 +278,9 @@ uint8_t SYS::checkHVMODE() {                         // Check HV Programming Mod
   ADC0_COMMAND |= ADC_STCONV_bm;                     // start a conversion
   while (ADC0_COMMAND & ADC_STCONV_bm);              // wait while busy
   return ADC0_RESL;                                  // return HV mode jumper setting
-#elif defined (__AVR_ATmega_Zero__ ) || defined( __AVR_DA__) 
+#elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__) 
   PORTD_PIN7CTRL = 0x04;                             // disable digital input buffer for PD7
-  //ADC0_CTRLA = ADC_RESSEL_8BIT_gc;                   // 8-bit resolution
+  ADC0_CTRLA = ADC_RESSEL_8BIT_gc;                   // 8-bit resolution
   ADC0_CTRLC = 0x54;                                 // reduced capacitance, Vdd ref, prescaler of 32
   ADC0_MUXPOS = 0x07;                                // select AIN7
   ADC0_CTRLA |= ADC_ENABLE_bm;                       // turn ADC on
