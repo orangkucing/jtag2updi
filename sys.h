@@ -514,6 +514,7 @@ namespace SYS {
   void setHVLED(void);
   void clearHVLED(void);
   void pulseHV(void);
+  void updiEnable(void);
   void setPOWER(void);
   void clearPOWER(void);
   void cyclePOWER(void);

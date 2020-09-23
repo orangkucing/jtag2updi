@@ -48,16 +48,11 @@ inline void setup() {
 inline void loop() {
 #if (defined(__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__))
   SYS::setPOWER();
-  if (SYS::checkHVMODE() > 100) {  // if UDPI as GPIO or RESET, apply HV pulse
-    SYS::setHVLED();
-    SYS::pulseHV();
-    UPDI_io::put(UPDI_io::double_break);
-    _delay_us(500);
-    UPDI_io::put(UPDI::SYNCH);
-    SYS::checkOVERLOAD();
-    _delay_us(150000);
-    SYS::clearHVLED();
+if (SYS::checkHVMODE() > 100) {  // if HV or PCHV mode, then apply HV pulse and UPDI enable sequence
+   SYS::pulseHV();
+   SYS::updiEnable();
   }
+  SYS::checkOVERLOAD();
 #endif
 #ifndef DISABLE_HOST_TIMEOUT
   uint8_t HostErrorCount = 0;
@@ -123,9 +118,6 @@ inline void process_command() {
   switch (JTAG2::packet.body[0]) {
     case JTAG2::CMND_GET_SIGN_ON:
       JTAG2::sign_on();
-#if (defined(__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__))
-      if (SYS::checkHVMODE() > 100) SYS::setHVLED();
-#endif
       break;
     case JTAG2::CMND_GET_PARAMETER:
       JTAG2::get_parameter();
@@ -154,7 +146,7 @@ inline void process_command() {
       JTAG2::ConnectedTo &= 0xFD; // no longer talking to host either, anymore.
       set_status(JTAG2::RSP_OK);
 #if (defined(__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__))
-      if (SYS::checkHVMODE() > 200) SYS::cyclePOWER();  // if UDPI as GPIO, power-cycle target
+      if (SYS::checkHVMODE() > 200) SYS::cyclePOWER();  // if HV or PCHV mode, power-cycle target
 #endif
       break;
     case JTAG2::CMND_LEAVE_PROGMODE:
@@ -170,13 +162,12 @@ inline void process_command() {
       JTAG2::go();
       break;
     case JTAG2::CMND_SET_DEVICE_DESCRIPTOR:
-#if (defined(__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__))
-      if (SYS::checkHVMODE() > 200) SYS::cyclePOWER();  // if UDPI as GPIO, power-cycle target
-      if (SYS::checkHVMODE() > 100) {  // if UDPI as GPIO or RESET, apply HV pulse
-        SYS::clearHVLED();
-        SYS::pulseHV();
-      }
-#endif
+
+    #if (defined(__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__))
+      SYS::pulseHV();
+      SYS::updiEnable();
+    #endif
+
       JTAG2::set_device_descriptor();
       break;
     case JTAG2::CMND_READ_MEMORY:

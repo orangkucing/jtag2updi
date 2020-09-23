@@ -117,85 +117,93 @@ void SYS::clearHVLED(void){
 }
 
 void SYS::pulseHV(void) {
+   SYS::setHVLED();
+   _delay_ms(1); // initial delay after startup
 #if defined(__AVR_ATmega328P__)
-  PORTB &= ~0b00001000; // clear HVSD3
-  PORTB |=  0b00010000; // set HVPWR4
+  PORTB &= ~0b00001000; // clear cps
+  PORTB |=  0b00010000; // set cpp
 #elif defined(__AVR_ATtiny_Zero_One__)
-  PORTB.OUTCLR &= cps; // disable shutdown
-  PORTA.OUTSET |= cpp; // turn on power
+  PORTB.OUTCLR &= ~cps; // disable shutdown
+  PORTA.OUTSET |=  cpp; // turn on power
 #elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
-  PORTC.OUTCLR &= cps; // disable shutdown
-  PORTA.OUTSET |= cpp; // turn on power
+  PORTC.OUTCLR &= ~cps; // disable shutdown
+  PORTA.OUTSET |=  cpp; // turn on power
 #endif
-  for (int j = 0; j <= 255; j++) {
+  for (int j = 0; j <= 180; j++) {
 #if defined(__AVR_ATmega328P__)
-    PORTB &= ~0b00000100; // clear HVCP2
-    PORTB |=  0b00000010; // set HVCP1
+    PORTB &= ~0b00000100; // clear cp2
+    PORTB |=  0b00000010; // set cp1
 #elif defined (__AVR_ATtiny_Zero_One__)
-    PORTA.OUTCLR &= cp2;
-    PORTA.OUTSET |= cp1;
+    PORTA.OUTCLR &= ~cp2;
+    PORTA.OUTSET |=  cp1;
 #elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
-    PORTC.OUTCLR &= cp2;
-    PORTC.OUTSET |= cp1;
+    PORTC.OUTCLR &= ~cp2;
+    PORTC.OUTSET |=  cp1;
 #endif
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
+    __builtin_avr_nops(9);
 #if defined(__AVR_ATmega328P__)
-    PORTB &= ~0b00000010; // clear HVCP1
-    PORTB |=  0b00000100; // set HVCP2
+    PORTB &= ~0b00000010; // clear cp1
+    PORTB |=  0b00000100; // set cp2
 #elif defined(__AVR_ATtiny_Zero_One__)
-    PORTA.OUTCLR &= cp1;
-    PORTA.OUTSET |= cp2;
+    PORTA.OUTCLR &= ~cp1;
+    PORTA.OUTSET |=  cp2;
 #elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
-    PORTC.OUTCLR &= cp1;
-    PORTC.OUTSET |= cp2;
+    PORTC.OUTCLR &= ~cp1;
+    PORTC.OUTSET |=  cp2;
 #endif
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
-    __asm__ __volatile__("nop");
+    __builtin_avr_nops(9);
   }
 #if defined(__AVR_ATmega328P__)
-  PORTB &= ~0b00000100; // clear HVCP2
-  PORTB &= ~0b00010000; // clear HVPWR4
-  PORTB |=  0b00001000; // set HVSD3
+  PORTB &= ~0b00000100;  // clear cp2
+  PORTB &= ~0b00010000;  // clear cpp
+  PORTB |=  0b00001000;  // set cps
+  PORTD &= ~0b01000000;  // UPDI pullup disabled
+  DDRD  &= ~0b01000000;  // UPDI rx enable
 #elif defined(__AVR_ATtiny_Zero_One__)
-  PORTA.OUTCLR &= cp2;  // default
-  PORTA.OUTCLR &= cpp;  // turn off power
-  PORTB.OUTSET |= cps;  // enable shutdown
+  PORTA.OUTCLR &= ~cp2;  // default
+  PORTA.OUTCLR &= ~cpp;  // turn off power
+  PORTB.OUTSET |=  cps;  // enable shutdown
+  PORTB.PIN0CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
+  PORTB.DIRSET &= ~PIN0_bm; // UPDI rx enable
 #elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
-  PORTC.OUTCLR &= cp2;  // default
-  PORTC.OUTCLR &= cpp;  // turn off power
-  PORTC.OUTSET |= cps;  // enable shutdown
+  PORTC.OUTCLR &= ~cp2;  // default
+  PORTC.OUTCLR &= ~cpp;  // turn off power
+  PORTC.OUTSET |=  cps;  // enable shutdown
+  PORTA.PIN3CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
+  PORTA.DIRSET &= ~PIN3_bm; // UPDI rx enable
 #endif
-  _delay_us(8); // delay (allowable range = 1-10µs)
+  _delay_ms(50); // tri-state duration after HV pulse 
+  SYS::clearHVLED();
+}
+
+void SYS::updiEnable(void) {
+   // Release UPDI Reset and initiate UPDI Enable by driving low (0.7µs) then tri-state
+#if defined(__AVR_ATmega328P__)
+   DDRD  |=  0b01000000;  // UPDI tx enable
+   PORTD &= ~0b01000000;  // low
+   __builtin_avr_nops(7);
+   DDRD  &= ~0b01000000;  // UPDI rx enable (tri-state)
+   _delay_us(700);        // tri-state duration after UPDI Enable trigger pulse
+   PORTD |=  0b01000000;  // enable pull-up
+#elif defined(__AVR_ATtiny_Zero_One__)
+   PORTB.DIRSET |=  PIN0_bm; // UPDI tx enable
+   PORTB.OUTCLR &= ~PIN0_bm; // low
+   __builtin_avr_nops(7);
+   PORTB.PIN0CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
+   PORTB.DIRSET &= ~PIN0_bm; // UPDI rx enable (tri-state)
+   _delay_us(700);  // tri-state duration after UPDI Enable trigger pulse
+   PORTB.PIN0CTRL |= PORT_PULLUPEN_bm; // enable pullup
+#elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
+   PORTA.DIRSET |=  PIN3_bm; // UPDI tx enable
+   PORTA.OUTCLR &= ~PIN3_bm; // low
+   __builtin_avr_nops(7);
+   PORTA.PIN3CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
+   PORTA.DIRSET &= ~PIN3_bm; // UPDI rx enable (tri-state)
+   _delay_us(700);  // tri-state duration after UPDI Enable trigger pulse
+   PORTA.PIN3CTRL |= PORT_PULLUPEN_bm; // enable pullup
+#endif
+   UPDI::write_key(UPDI::NVM_Prog);
+   _delay_ms(1);
 }
 
 void SYS::setPOWER(void) {
@@ -219,9 +227,8 @@ void SYS::clearPOWER(void) {
 
 void SYS::cyclePOWER(void) {
   SYS::clearPOWER();
-  _delay_us(10000);
+  _delay_ms(100);
   SYS::setPOWER();
-  _delay_us(2000);
 }
 
 void SYS::checkOVERLOAD(void) {                      // Use A6 to sense overload on A0-A5 (target power)
@@ -253,9 +260,9 @@ void SYS::checkOVERLOAD(void) {                      // Use A6 to sense overload
     while (1) {                                      // OVERLOAD (fix circuit then press Reset)
       clearPOWER();                                  // turn off target power then flash LED at 4Hz
       setLED();
-      _delay_us(50000);
+      _delay_ms(50);
       clearLED();
-      _delay_us(200000);
+      _delay_ms(200);
     }
   }
 # endif
