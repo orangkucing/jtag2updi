@@ -53,7 +53,6 @@ if (SYS::checkHVMODE() > 100) {  // if HV or PCHV mode, then apply HV pulse and 
    SYS::updiEnable();
    SYS::pulseHV();
    SYS::updiEnable();
-//   UPDI_io::put(UPDI_io::double_break);
   }
   SYS::checkOVERLOAD();
 #endif
