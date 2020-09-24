@@ -53,6 +53,7 @@ if (SYS::checkHVMODE() > 100) {  // if HV or PCHV mode, then apply HV pulse and 
    SYS::updiEnable();
    SYS::pulseHV();
    SYS::updiEnable();
+   UPDI::stcs(0xC3, 0x0C); // Disable Collision and Contention Detection and UPDI PHY interface
   }
   SYS::checkOVERLOAD();
 #endif
@@ -168,6 +169,7 @@ inline void process_command() {
     #if (defined(__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__))
       SYS::pulseHV();
       SYS::updiEnable();
+      UPDI::stcs(0xC3, 0x0C); // Disable Collision and Contention Detection and UPDI PHY interface
     #endif
 
       JTAG2::set_device_descriptor();
