@@ -429,7 +429,7 @@
 #endif
 
 #ifndef UPDI_BAUD
-	#	define UPDI_BAUD 225000U	// (max 225000 min approx. F_CPU/100)
+	#	define UPDI_BAUD 100000U	// (max 225000 min approx. F_CPU/100)
 #endif
 
 /*
@@ -514,6 +514,10 @@ namespace SYS {
   void setHVLED(void);
   void clearHVLED(void);
   void pulseHV(void);
+  void updiTriState(void);
+  void updiHigh(void);
+  void updiIdle(void);
+  void updiInitiate(void);
   void updiEnable(void);
   void setPOWER(void);
   void clearPOWER(void);

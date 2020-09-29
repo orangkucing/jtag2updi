@@ -1,14 +1,14 @@
 # HV UPDI Programmers
 
+These HV UPDI programming designs are open source and made to work with tinyAVR® [0-series](https://www.microchip.com/design-centers/8-bit/avr-mcus/device-selection/attiny1607) and [1-series](https://www.microchip.com/design-centers/8-bit/avr-mcus/device-selection/attiny3217) MCUs,  [megaTinyCore](https://github.com/SpenceKonde/megaTinyCore)  and the [Arduino IDE](https://www.arduino.cc/en/Main/Software).  This allows using the additional configuration settings for the UPDI pin without the fear of getting locked out from the MCU. Normal workflow when using the Arduino IDE is preserved. This repo has been modified to allow HV UPDI programming and can be installed on various programmer MCUs including the newer ATtiny parts.  
+
 ![](https://github.com/Dlloydev/jtag2updi/wiki/images/updienable.png)
 
-This Source Code was cloned then updated to add new features for HV programming. 
 
-The tinyAVR® 0-series and 1-series are programmed through the Unified Program and Debug Interface (UPDI) that uses the UPDI/reset pin.
 
 ![](https://github.com/Dlloydev/jtag2updi/wiki/images/Protocol.png)
 
-The HV UPDI programmers ([here](https://github.com/Dlloydev/jtag2updi/wiki)) are open source hardware designed to work with tinyAVR® [0-series](https://www.microchip.com/design-centers/8-bit/avr-mcus/device-selection/attiny1607) and [1-series](https://www.microchip.com/design-centers/8-bit/avr-mcus/device-selection/attiny3217) MCUs,  [megaTinyCore](https://github.com/SpenceKonde/megaTinyCore)  and the [Arduino IDE](https://www.arduino.cc/en/Main/Software).  These programmers allow using the additional configuration settings for the UPDI pin without the fear of getting locked out from the MCU. They work with the Arduino IDE without interfering with its normal workflow.
+
 
 ## Compare
 

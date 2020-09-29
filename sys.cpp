@@ -129,7 +129,7 @@ void SYS::pulseHV(void) {
   PORTC.OUTCLR &= ~cps; // disable shutdown
   PORTA.OUTSET |=  cpp; // turn on power
 #endif
-  for (int j = 0; j <= 180; j++) {
+  for (int j = 0; j <= 240; j++) {
 #if defined(__AVR_ATmega328P__)
     PORTB &= ~0b00000100; // clear cp2
     PORTB |=  0b00000010; // set cp1
@@ -172,38 +172,78 @@ void SYS::pulseHV(void) {
   PORTA.PIN3CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
   PORTA.DIRSET &= ~PIN3_bm; // UPDI rx enable
 #endif
-  _delay_ms(50); // tri-state duration after HV pulse 
+  _delay_ms(49); // tri-state duration after HV pulse 
   SYS::clearHVLED();
 }
 
-void SYS::updiEnable(void) {
-   // Release UPDI Reset and initiate UPDI Enable by driving low (0.7µs) then tri-state
+void SYS::updiTriState(void) {
 #if defined(__AVR_ATmega328P__)
-   DDRD  |=  0b01000000;  // UPDI tx enable
-   PORTD &= ~0b01000000;  // low
-   __builtin_avr_nops(7);
-   DDRD  &= ~0b01000000;  // UPDI rx enable (tri-state)
-   _delay_us(700);        // tri-state duration after UPDI Enable trigger pulse
-   PORTD |=  0b01000000;  // enable pull-up
+  DDRD  &= ~0b01000000;  // UPDI rx enable
+  PORTD &= ~0b01000000;  // low
 #elif defined(__AVR_ATtiny_Zero_One__)
-   PORTB.DIRSET |=  PIN0_bm; // UPDI tx enable
-   PORTB.OUTCLR &= ~PIN0_bm; // low
-   __builtin_avr_nops(7);
-   PORTB.PIN0CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
-   PORTB.DIRSET &= ~PIN0_bm; // UPDI rx enable (tri-state)
-   _delay_us(700);  // tri-state duration after UPDI Enable trigger pulse
-   PORTB.PIN0CTRL |= PORT_PULLUPEN_bm; // enable pullup
+  PORTB.DIRSET &= ~PIN0_bm; // UPDI rx enable
+  PORTB.PIN0CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
 #elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
-   PORTA.DIRSET |=  PIN3_bm; // UPDI tx enable
-   PORTA.OUTCLR &= ~PIN3_bm; // low
-   __builtin_avr_nops(7);
-   PORTA.PIN3CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
-   PORTA.DIRSET &= ~PIN3_bm; // UPDI rx enable (tri-state)
-   _delay_us(700);  // tri-state duration after UPDI Enable trigger pulse
-   PORTA.PIN3CTRL |= PORT_PULLUPEN_bm; // enable pullup
+  PORTA.DIRSET &= ~PIN3_bm; // UPDI rx enable
+  PORTA.PIN3CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
 #endif
-   UPDI::write_key(UPDI::NVM_Prog);
-   _delay_ms(1);
+}
+
+void SYS::updiHigh(void) {
+#if defined(__AVR_ATmega328P__)
+  PORTD |=  0b01000000;  // high
+  DDRD  |=  0b01000000;  // UPDI tx enable
+#elif defined(__AVR_ATtiny_Zero_One__)
+  PORTB.OUTSET |=  PIN0_bm; // high
+  PORTB.DIRSET |=  PIN0_bm; // UPDI tx enable
+#elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
+  PORTA.OUTSET |=  PIN3_bm; // high
+  PORTA.DIRSET |=  PIN3_bm; // UPDI tx enable
+#endif
+  _delay_us(20);
+}
+
+void SYS::updiIdle(void) {
+  SYS::updiHigh();
+  SYS::updiTriState();
+  _delay_us(521);
+  SYS::updiHigh();
+}
+
+void SYS::updiInitiate(void) {
+// Release UPDI Reset and initiate UPDI Enable by driving low (0.7µs) then tri-state
+#if defined(__AVR_ATmega328P__)
+  SYS::updiHigh();
+  PORTD &= ~0b01000000;  // low
+  __builtin_avr_nops(5);
+  SYS::updiTriState();
+#elif defined(__AVR_ATtiny_Zero_One__)
+  PORTB.DIRSET |=  PIN0_bm; // UPDI tx enable
+  PORTB.OUTSET |=  PIN0_bm; // high
+  PORTB.OUTCLR &= ~PIN0_bm; // low
+  __builtin_avr_nops(5);
+  PORTB.PIN0CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
+  PORTB.DIRSET &= ~PIN0_bm; // UPDI rx enable (tri-state)
+#elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
+  PORTA.DIRSET |=  PIN3_bm; // UPDI tx enable
+  PORTA.OUTSET |=  PIN3_bm; // high
+  PORTA.OUTCLR &= ~PIN3_bm; // low
+  __builtin_avr_nops(5);
+  PORTA.PIN3CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
+  PORTA.DIRSET &= ~PIN3_bm; // UPDI rx enable (tri-state)
+#endif
+  _delay_us(521);  // tri-state duration after UPDI Enable trigger pulse
+}
+
+void SYS::updiEnable(void) {
+  SYS::updiInitiate();
+  SYS::updiHigh();
+  UPDI::write_key(UPDI::NVM_Prog);
+  SYS::updiIdle();
+  UPDI_io::put(UPDI::SYNCH);
+  SYS::updiHigh();
+  SYS::updiTriState();
+  _delay_us(521);
 }
 
 void SYS::setPOWER(void) {
@@ -227,7 +267,7 @@ void SYS::clearPOWER(void) {
 
 void SYS::cyclePOWER(void) {
   SYS::clearPOWER();
-  _delay_ms(100);
+  _delay_ms(115);
   SYS::setPOWER();
 }
 

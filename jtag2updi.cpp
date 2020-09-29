@@ -41,19 +41,14 @@ inline void setup() {
   /* Initialize serial links */
   JICE_io::init();
   UPDI_io::init();
-
 }
-
 
 inline void loop() {
 #if (defined(__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__))
   SYS::setPOWER();
 if (SYS::checkHVMODE() > 100) {  // if HV or PCHV mode, then apply HV pulse and UPDI enable sequence
-   SYS::pulseHV();
-   SYS::updiEnable();
-   SYS::pulseHV();
-   SYS::updiEnable();
-   UPDI::stcs(UPDI::reg::Control_B, 0x0C); // Disable Collision and Contention Detection and UPDI PHY interface
+  SYS::pulseHV();
+  SYS::updiEnable();
   }
   SYS::checkOVERLOAD();
 #endif
@@ -149,7 +144,7 @@ inline void process_command() {
       JTAG2::ConnectedTo &= 0xFD; // no longer talking to host either, anymore.
       set_status(JTAG2::RSP_OK);
 #if (defined(__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__))
-      if (SYS::checkHVMODE() > 200) SYS::cyclePOWER();  // if HV or PCHV mode, power-cycle target
+      if (SYS::checkHVMODE() > 200) SYS::cyclePOWER();  // if PCHV mode, power-cycle target
 #endif
       break;
     case JTAG2::CMND_LEAVE_PROGMODE:
@@ -167,8 +162,11 @@ inline void process_command() {
     case JTAG2::CMND_SET_DEVICE_DESCRIPTOR:
 
     #if (defined(__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__))
+      if (SYS::checkHVMODE() > 200) SYS::cyclePOWER();  // if PCHV mode, power-cycle target
+      if (SYS::checkHVMODE() > 100) {  // if HV or PCHV mode, then apply HV pulse and UPDI enable sequence
       SYS::pulseHV();
       SYS::updiEnable();
+      }
     #endif
 
       JTAG2::set_device_descriptor();
