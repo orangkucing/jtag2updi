@@ -123,7 +123,7 @@
 // Same as above, pretty much
 // big difference here is your specify the name of the peripheral instead of the number, and the target baud rate, because we grab the OSCCAL value per datasheet./
 //	#define USE_USARTDEBUG
-//	#define DEBUG_USART USART1
+//	#define DEBUG_USART USART2
 //	#define DEBUG_BAUDRATE 2000000UL
 
   #define LED_PORT A

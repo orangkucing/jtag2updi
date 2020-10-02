@@ -65,27 +65,27 @@ void SYS::init(void) {
 
   #if defined(__AVR_ATmega328P__)
   // Dickson charge pump - Bit 4,3,2,1,0: HVPWR4 Power, HVSD3 Shutdown, HVCP2 Clock, HVCP1 Clock, HVLED
-  DDRB |=   0b00011111;    // configure HVPWR4, HVSD3, HVCP2, HVCP1, HVLED as outputs
-  PORTB &= ~0b00011110;    // clear HVPWR4, HVSD3, HVCP2, HVCP1
-  PORTB |=  0b00001000;    // set HVSD3
+  DDRB |=   0b00011111;      // configure HVPWR4, HVSD3, HVCP2, HVCP1, HVLED as outputs
+  PORTB &= ~0b00011110;      // clear HVPWR4, HVSD3, HVCP2, HVCP1
+  PORTB |=  0b00001000;      // set HVSD3
 
   #elif defined(__AVR_ATtiny_Zero_One__)
   // Output Pins
-  PORTA.DIRSET |= PIN2_bm | cpp | PIN6_bm | PIN7_bm; // Power Switch, ChargePumpPower-HVenable, LED2-HVLED, LED
-  PORTA.OUTSET |= PIN2_bm;  // enable power switch
-  PORTA.DIRSET |= cp1 |cp2; // set charge pump clock1 and clock2 as output
-  PORTB.DIRSET |= cps;      // set charge pump shutdown pin as output
-  PORTB.OUTSET |= cps;      // enable charge pump shutdown
+  PORTA.DIRSET = PIN2_bm | cpp | PIN6_bm | PIN7_bm; // Power Switch, ChargePumpPower-HVenable, LED2-HVLED, LED
+  PORTA.OUTSET = PIN2_bm;   // enable power switch
+  PORTA.DIRSET = cp1 | cp2; // set charge pump clock1 and clock2 as output
+  PORTB.DIRSET = cps;       // set charge pump shutdown pin as output
+  PORTB.OUTSET = cps;       // enable charge pump shutdown
 
   #elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
   // Output Pins
-  PORTA.DIRSET |= PIN2_bm | PIN6_bm | PIN7_bm; // Power Switch, LED2-HVLED, LED
-  PORTA.OUTSET |= PIN2_bm;  // enable power switch
-  PORTC.DIRSET |= PIN0_bm;  // ChargePumpPower-HVenable,  
-  PORTC.DIRSET |= cp1 |cp2; // set charge pump clock1 and clock2 as output
-  PORTC.DIRSET |= cps;      // set charge pump shutdown pin as output
-  PORTC.OUTSET |= cps;      // enable charge pump shutdown
-  #endif  
+  PORTA.DIRSET = PIN2_bm | PIN6_bm | PIN7_bm; // Power Switch, LED2-HVLED, LED
+  PORTA.OUTSET = PIN2_bm;   // enable power switch
+  PORTC.DIRSET = cpp | cp1 | cp2 | cps; // set charge pump power, clock1, clock2 and shutdown as output
+  PORTC.OUTSET = cps;       // enable charge pump shutdown
+  PORTD.DIRSET = PIN0_bm | PIN1_bm | PIN2_bm | PIN3_bm | PIN4_bm | PIN5_bm; // set target power port as output
+  PORTD.OUTSET = PIN0_bm | PIN1_bm | PIN2_bm | PIN3_bm | PIN4_bm | PIN5_bm; // turn on target power
+  #endif
 }
 
 void SYS::setLED(void){
@@ -123,33 +123,37 @@ void SYS::pulseHV(void) {
   PORTB &= ~0b00001000; // clear cps
   PORTB |=  0b00010000; // set cpp
 #elif defined(__AVR_ATtiny_Zero_One__)
-  PORTB.OUTCLR &= ~cps; // disable shutdown
-  PORTA.OUTSET |=  cpp; // turn on power
+  PORTB.OUTCLR = cps; // clear cps
+  PORTA.OUTSET = cpp; // set cpp
 #elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
-  PORTC.OUTCLR &= ~cps; // disable shutdown
-  PORTA.OUTSET |=  cpp; // turn on power
+  PORTC.OUTCLR = cps; // clear cps
+  PORTC.OUTSET = cpp; // set cpp
 #endif
-  for (int j = 0; j <= 240; j++) {
+  for (int j = 0; j <= 160; j++) {
 #if defined(__AVR_ATmega328P__)
-    PORTB &= ~0b00000100; // clear cp2
-    PORTB |=  0b00000010; // set cp1
+  PORTB &= ~0b00000100; // clear cp2
+  PORTB |=  0b00000010; // set cp1
 #elif defined (__AVR_ATtiny_Zero_One__)
-    PORTA.OUTCLR &= ~cp2;
-    PORTA.OUTSET |=  cp1;
+  PORTA.OUTCLR = cp1 | cp2;
+  __builtin_avr_nops(4);
+  PORTA.OUTSET = cp1;
 #elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
-    PORTC.OUTCLR &= ~cp2;
-    PORTC.OUTSET |=  cp1;
+  PORTC.OUTCLR = cp1 | cp2;
+  __builtin_avr_nops(4);
+  PORTC.OUTSET = cp1;
 #endif
-    __builtin_avr_nops(9);
+  __builtin_avr_nops(9);
 #if defined(__AVR_ATmega328P__)
-    PORTB &= ~0b00000010; // clear cp1
-    PORTB |=  0b00000100; // set cp2
+  PORTB &= ~0b00000010; // clear cp1
+  PORTB |=  0b00000100; // set cp2
 #elif defined(__AVR_ATtiny_Zero_One__)
-    PORTA.OUTCLR &= ~cp1;
-    PORTA.OUTSET |=  cp2;
+  PORTA.OUTCLR = cp1 | cp2;
+  __builtin_avr_nops(4);
+  PORTA.OUTSET = cp2;
 #elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
-    PORTC.OUTCLR &= ~cp1;
-    PORTC.OUTSET |=  cp2;
+  PORTC.OUTCLR = cp1 | cp2;
+  __builtin_avr_nops(4);
+  PORTC.OUTSET = cp2;
 #endif
     __builtin_avr_nops(9);
   }
@@ -160,17 +164,17 @@ void SYS::pulseHV(void) {
   PORTD &= ~0b01000000;  // UPDI pullup disabled
   DDRD  &= ~0b01000000;  // UPDI rx enable
 #elif defined(__AVR_ATtiny_Zero_One__)
-  PORTA.OUTCLR &= ~cp2;  // default
-  PORTA.OUTCLR &= ~cpp;  // turn off power
-  PORTB.OUTSET |=  cps;  // enable shutdown
+  PORTA.OUTCLR = cp2;  // clear cp2
+  PORTA.OUTCLR = cpp;  // clear cpp
   PORTB.PIN0CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
-  PORTB.DIRSET &= ~PIN0_bm; // UPDI rx enable
+  PORTB.DIRSET = PIN0_bm; // UPDI rx enable
+  PORTB.OUTSET = cps;  // set cps
 #elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
-  PORTC.OUTCLR &= ~cp2;  // default
-  PORTC.OUTCLR &= ~cpp;  // turn off power
-  PORTC.OUTSET |=  cps;  // enable shutdown
+  PORTC.OUTCLR = cp2;  // clear cp2
+  PORTC.OUTCLR = cpp;  // clear cpp
   PORTA.PIN3CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
-  PORTA.DIRSET &= ~PIN3_bm; // UPDI rx enable
+  PORTA.DIRSET = PIN3_bm; // UPDI rx enable
+  PORTC.OUTSET = cps;  // set cps
 #endif
   _delay_ms(49); // tri-state duration after HV pulse 
   SYS::clearHVLED();
@@ -178,27 +182,27 @@ void SYS::pulseHV(void) {
 
 void SYS::updiTriState(void) {
 #if defined(__AVR_ATmega328P__)
-  DDRD  &= ~0b01000000;  // UPDI rx enable
-  PORTD &= ~0b01000000;  // low
+  DDRD  &= ~0b01000000; // UPDI rx enable
+  PORTD &= ~0b01000000; // low
 #elif defined(__AVR_ATtiny_Zero_One__)
-  PORTB.DIRSET &= ~PIN0_bm; // UPDI rx enable
+  PORTB.DIRCLR = PIN0_bm; // UPDI rx enable
   PORTB.PIN0CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
 #elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
-  PORTA.DIRSET &= ~PIN3_bm; // UPDI rx enable
+  PORTA.DIRCLR = PIN3_bm; // UPDI rx enable
   PORTA.PIN3CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
 #endif
 }
 
 void SYS::updiHigh(void) {
 #if defined(__AVR_ATmega328P__)
-  PORTD |=  0b01000000;  // high
-  DDRD  |=  0b01000000;  // UPDI tx enable
+  PORTD |= 0b01000000; // enable pullup
+  DDRD  |= 0b01000000; // UPDI tx enable, goes high
 #elif defined(__AVR_ATtiny_Zero_One__)
-  PORTB.OUTSET |=  PIN0_bm; // high
-  PORTB.DIRSET |=  PIN0_bm; // UPDI tx enable
+  PORTB.OUTSET = PIN0_bm; // high
+  PORTB.DIRSET = PIN0_bm; // UPDI tx enable
 #elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
-  PORTA.OUTSET |=  PIN3_bm; // high
-  PORTA.DIRSET |=  PIN3_bm; // UPDI tx enable
+  PORTA.OUTSET = PIN3_bm; // high
+  PORTA.DIRSET = PIN3_bm; // UPDI tx enable
 #endif
   _delay_us(20);
 }
@@ -218,19 +222,19 @@ void SYS::updiInitiate(void) {
   __builtin_avr_nops(5);
   SYS::updiTriState();
 #elif defined(__AVR_ATtiny_Zero_One__)
-  PORTB.DIRSET |=  PIN0_bm; // UPDI tx enable
-  PORTB.OUTSET |=  PIN0_bm; // high
-  PORTB.OUTCLR &= ~PIN0_bm; // low
+  PORTB.DIRSET = PIN0_bm; // UPDI tx enable
+  PORTB.OUTSET = PIN0_bm; // high
+  PORTB.OUTCLR = PIN0_bm; // low
   __builtin_avr_nops(5);
   PORTB.PIN0CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
-  PORTB.DIRSET &= ~PIN0_bm; // UPDI rx enable (tri-state)
+  PORTB.DIRCLR = PIN0_bm; // UPDI rx enable (tri-state)
 #elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
-  PORTA.DIRSET |=  PIN3_bm; // UPDI tx enable
-  PORTA.OUTSET |=  PIN3_bm; // high
-  PORTA.OUTCLR &= ~PIN3_bm; // low
+  PORTA.DIRSET = PIN3_bm; // UPDI tx enable
+  PORTA.OUTSET = PIN3_bm; // high
+  PORTA.OUTCLR = PIN3_bm; // low
   __builtin_avr_nops(5);
   PORTA.PIN3CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
-  PORTA.DIRSET &= ~PIN3_bm; // UPDI rx enable (tri-state)
+  PORTA.DIRCLR = PIN3_bm; // UPDI rx enable (tri-state)
 #endif
   _delay_us(521);  // tri-state duration after UPDI Enable trigger pulse
 }
@@ -248,20 +252,24 @@ void SYS::updiEnable(void) {
 
 void SYS::setPOWER(void) {
 #if defined(__AVR_ATmega328P__)
-  DDRC |= 0b00111111;   // enable pullups
-  PORTC |= 0b00111111;  // set as outputs
+  DDRC |= 0b00111111;  // enable pullups
+  PORTC |= 0b00111111; // set as outputs
 #elif defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
-  PORTA.OUTSET |= PIN2_bm;  // PA2 high
+  PORTA.OUTSET = PIN2_bm; // power switch high
+#elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
+  PORTD.OUTSET = PIN0_bm | PIN1_bm | PIN2_bm | PIN3_bm | PIN4_bm | PIN5_bm; // turn on target power port
 #endif
   _delay_us(10);
 }
 
 void SYS::clearPOWER(void) {
 #if defined(__AVR_ATmega328P__)
-  DDRC &= 0b11000000;   // disable pullups
-  PORTC &= 0b11000000;  // set as inputs
+  DDRC &= 0b11000000;  // disable pullups
+  PORTC &= 0b11000000; // set as inputs
 #elif defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
-  PORTA.OUTCLR |= PIN2_bm;  // PA2 low
+  PORTA.OUTCLR = PIN2_bm; // power switch low
+#elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
+  PORTD.OUTCLR = PIN0_bm | PIN1_bm | PIN2_bm | PIN3_bm | PIN4_bm | PIN5_bm; // turn off target power port
 #endif
 }
 
