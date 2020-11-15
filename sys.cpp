@@ -47,18 +47,23 @@ void SYS::init(void) {
     #endif
   #else
     #if defined(ARDUINO_AVR_LARDU_328E)
-	  #include <avr/power.h>
-      clock_prescale_set ( (clock_div_t) __builtin_log2(32000000UL / F_CPU));
+    #include <avr/power.h>
+    clock_prescale_set ( (clock_div_t) __builtin_log2(32000000UL / F_CPU));
     #endif
-	  PORT(UPDI_PORT) = 1<<UPDI_PIN;
+    PORT(UPDI_PORT) = 1<<UPDI_PIN;
   #endif
+
 
   DDR(LED_PORT) |= (1 << LED_PIN);
   #ifdef LED2_PORT
   DDR(LED2_PORT) |= (1 << LED2_PIN);
   #endif
+  #ifndef DISABLE_HOST_TIMEOUT
   TIMER_HOST_MAX=HOST_TIMEOUT;
+  #endif
+  #ifndef DISABLE_TARGET_TIMEOUT
   TIMER_TARGET_MAX=TARGET_TIMEOUT;
+  #endif
   #if defined(DEBUG_ON)
   DBG::debug(0x18,0xC0,0xFF, 0xEE);
   #endif
@@ -89,11 +94,11 @@ void SYS::init(void) {
 }
 
 void SYS::setLED(void){
-	PORT(LED_PORT) |= 1 << LED_PIN;
+  PORT(LED_PORT) |= 1 << LED_PIN;
 }
 
 void SYS::clearLED(void){
-	PORT(LED_PORT) &= ~(1 << LED_PIN);
+  PORT(LED_PORT) &= ~(1 << LED_PIN);
 }
 
 void SYS::setVerLED(void){
@@ -129,7 +134,7 @@ void SYS::pulseHV(void) {
   PORTC.OUTCLR = cps; // clear cps
   PORTC.OUTSET = cpp; // set cpp
 #endif
-  for (int j = 0; j <= 160; j++) {
+  for (int j = 0; j <= 200; j++) {
 #if defined(__AVR_ATmega328P__)
   PORTB &= ~0b00000100; // clear cp2
   PORTB |=  0b00000010; // set cp1
