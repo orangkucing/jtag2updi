@@ -145,7 +145,7 @@ namespace {
         }
         JTAG2::ConnectedTo&=0xFD; // no longer talking to host either, anymore.
         set_status(JTAG2::RSP_OK);
-        #if (defined(__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__))
+        #if (defined(USE_HV_PROGRAMMING) && (defined(__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)))
         if (SYS::checkHVMODE() > 200) SYS::cyclePOWER();  // if PCHV mode, power-cycle target
         #endif
         break;
@@ -162,7 +162,7 @@ namespace {
         JTAG2::go();
         break;
       case JTAG2::CMND_SET_DEVICE_DESCRIPTOR:
-        #if (defined(__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__))
+        #if (defined(USE_HV_PROGRAMMING) && (defined(__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)))
         if (SYS::checkHVMODE() > 200) SYS::cyclePOWER();  // if PCHV mode, power-cycle target
         if (SYS::checkHVMODE() > 100) {  // if HV or PCHV mode, then apply HV pulse and UPDI enable sequence
         SYS::pulseHV();

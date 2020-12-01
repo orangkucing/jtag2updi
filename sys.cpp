@@ -67,7 +67,7 @@ void SYS::init(void) {
   #if defined(DEBUG_ON)
   DBG::debug(0x18,0xC0,0xFF, 0xEE);
   #endif
-
+  #if defined(USE_HV_PROGRAMMING)
   #if defined(__AVR_ATmega328P__)
   // Dickson charge pump - Bit 4,3,2,1,0: HVPWR4 Power, HVSD3 Shutdown, HVCP2 Clock, HVCP1 Clock, HVLED
   DDRB |=   0b00011111;      // configure HVPWR4, HVSD3, HVCP2, HVCP1, HVLED as outputs
@@ -90,6 +90,7 @@ void SYS::init(void) {
   PORTC.OUTSET = cps;       // enable charge pump shutdown
   PORTD.DIRSET = PIN0_bm | PIN1_bm | PIN2_bm | PIN3_bm | PIN4_bm | PIN5_bm; // set target power port as output
   PORTD.OUTSET = PIN0_bm | PIN1_bm | PIN2_bm | PIN3_bm | PIN4_bm | PIN5_bm; // turn on target power
+  #endif
   #endif
 }
 
@@ -114,14 +115,19 @@ void SYS::clearVerLED(void){
 }
 
 void SYS::setHVLED(void){
+  #if defined(USE_HV_PROGRAMMING)
   PORT(HVLED_PORT) |= 1 << HVLED_PIN;
+  #endif
 }
 
 void SYS::clearHVLED(void){
+  #if defined(USE_HV_PROGRAMMING)
   PORT(HVLED_PORT) &= ~(1 << HVLED_PIN);
+  #endif
 }
 
 void SYS::pulseHV(void) {
+  #if defined(USE_HV_PROGRAMMING)
    SYS::setHVLED();
    _delay_ms(1); // initial delay after startup
 #if defined(__AVR_ATmega328P__)
@@ -183,9 +189,11 @@ void SYS::pulseHV(void) {
 #endif
   _delay_ms(49); // tri-state duration after HV pulse 
   SYS::clearHVLED();
+  #endif
 }
 
 void SYS::updiTriState(void) {
+  #if defined(USE_HV_PROGRAMMING)
 #if defined(__AVR_ATmega328P__)
   DDRD  &= ~0b01000000; // UPDI rx enable
   PORTD &= ~0b01000000; // low
@@ -196,9 +204,11 @@ void SYS::updiTriState(void) {
   PORTA.DIRCLR = PIN3_bm; // UPDI rx enable
   PORTA.PIN3CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
 #endif
+  #endif
 }
 
 void SYS::updiHigh(void) {
+  #if defined(USE_HV_PROGRAMMING)
 #if defined(__AVR_ATmega328P__)
   PORTD |= 0b01000000; // enable pullup
   DDRD  |= 0b01000000; // UPDI tx enable, goes high
@@ -210,16 +220,20 @@ void SYS::updiHigh(void) {
   PORTA.DIRSET = PIN3_bm; // UPDI tx enable
 #endif
   _delay_us(20);
+  #endif
 }
 
 void SYS::updiIdle(void) {
+  #if defined(USE_HV_PROGRAMMING)
   SYS::updiHigh();
   SYS::updiTriState();
   _delay_us(521);
   SYS::updiHigh();
+  #endif
 }
 
 void SYS::updiInitiate(void) {
+  #if defined(USE_HV_PROGRAMMING)
 // Release UPDI Reset and initiate UPDI Enable by driving low (0.7µs) then tri-state
 #if defined(__AVR_ATmega328P__)
   SYS::updiHigh();
@@ -242,9 +256,12 @@ void SYS::updiInitiate(void) {
   PORTA.DIRCLR = PIN3_bm; // UPDI rx enable (tri-state)
 #endif
   _delay_us(521);  // tri-state duration after UPDI Enable trigger pulse
+  #endif
 }
 
 void SYS::updiEnable(void) {
+
+  #if defined(USE_HV_PROGRAMMING)
   SYS::updiInitiate();
   SYS::updiHigh();
   UPDI::write_key(UPDI::NVM_Prog);
@@ -253,9 +270,11 @@ void SYS::updiEnable(void) {
   SYS::updiHigh();
   SYS::updiTriState();
   _delay_us(521);
+  #endif
 }
 
 void SYS::setPOWER(void) {
+  #if defined(USE_HV_PROGRAMMING)
 #if defined(__AVR_ATmega328P__)
   DDRC |= 0b00111111;  // enable pullups
   PORTC |= 0b00111111; // set as outputs
@@ -265,9 +284,11 @@ void SYS::setPOWER(void) {
   PORTD.OUTSET = PIN0_bm | PIN1_bm | PIN2_bm | PIN3_bm | PIN4_bm | PIN5_bm; // turn on target power port
 #endif
   _delay_us(10);
+  #endif
 }
 
 void SYS::clearPOWER(void) {
+  #if defined(USE_HV_PROGRAMMING)
 #if defined(__AVR_ATmega328P__)
   DDRC &= 0b11000000;  // disable pullups
   PORTC &= 0b11000000; // set as inputs
@@ -276,15 +297,19 @@ void SYS::clearPOWER(void) {
 #elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
   PORTD.OUTCLR = PIN0_bm | PIN1_bm | PIN2_bm | PIN3_bm | PIN4_bm | PIN5_bm; // turn off target power port
 #endif
+  #endif
 }
 
 void SYS::cyclePOWER(void) {
+  #if defined(USE_HV_PROGRAMMING)
   SYS::clearPOWER();
   _delay_ms(115);
   SYS::setPOWER();
+  #endif
 }
 
 void SYS::checkOVERLOAD(void) {                      // Use A6 to sense overload on A0-A5 (target power)
+  #if defined(USE_HV_PROGRAMMING)
 #if defined(__AVR_ATmega328P__)                      // Arduino Nano
   ADCSRA = (1 << ADEN);                              // turn ADC on
   ADCSRA |= (1 << ADPS0) | (1 << ADPS2);             // prescaler of 32
@@ -319,9 +344,11 @@ void SYS::checkOVERLOAD(void) {                      // Use A6 to sense overload
     }
   }
 # endif
+  #endif
 }
 
 uint8_t SYS::checkHVMODE() {                         // Check HV Programming Mode Switch
+  #if defined(USE_HV_PROGRAMMING)
 #if defined(__AVR_ATmega328P__)                      // Arduino Nano
   ADCSRA =  (1 << ADEN);                             // turn ADC on
   ADCSRA |= (1 << ADPS0) | (1 << ADPS2);             // prescaler of 32
@@ -350,4 +377,5 @@ uint8_t SYS::checkHVMODE() {                         // Check HV Programming Mod
 #else
   return 0;
 # endif
+  #endif
 }
