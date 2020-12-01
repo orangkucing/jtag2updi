@@ -13,8 +13,11 @@
 #include <stdio.h> // for size_t
 #include "parts.h"
 
-//Disable the response signature during burst writes to permit faster writes
+// Disable the response signature during burst writes to permit faster writes
 #define NO_ACK_WRITE
+
+// If using a device based on the HV programmer designed by dlloyd (@Dlloyddev on github), enable that functionality
+#define USE_HV_PROGRAMMING
 
 // Disable the host timeout - this is required for use with avrdude in terminal mode (-t)
 // but with this disabled, can get "stuck" if communication with host is interrupted at 115200 baud
