@@ -81,6 +81,9 @@ namespace UPDI {
     DBG::updi_key();
     #endif
     UPDI_io::put(SYNCH);
+    UPDI_io::put(0xC0+(enum UPDI::reg)Control_B); // 0xC0 = STS Control/Status
+    UPDI_io::put(0x08); // CCDETDIS = 1 : Collision and Contention Detection Disable
+    UPDI_io::put(SYNCH);
     UPDI_io::put(0xE0);
     T* key_ptr = k;
     for (uint8_t i = 8; i != 0; i--) {
