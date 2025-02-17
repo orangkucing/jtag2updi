@@ -19,6 +19,19 @@
 // If using a device based on the HV programmer designed by dlloyd (@Dlloyddev on github), enable that functionality
 //#define USE_HV_PROGRAMMING
 
+// For HVUPDI2 by @orangkucing
+#define HVUPDI2
+#if defined(ADC6) // Arduino using 32pin ATmega328P
+#define ADCPIN_gc 6 // use ADC6
+#else // !defined(ADC6) Arduino using 28pin ATmega328P
+#define ADCPIN_gc 0 // use ADC0
+#endif // ADC6
+
+#if defined(HVUPDI2) && !defined(USE_HV_PROGRAMMING)
+#define USE_HV_PROGRAMMING
+#endif
+// End for HVUPDI2
+
 // Disable the host timeout - this is required for use with avrdude in terminal mode (-t)
 // but with this disabled, can get "stuck" if communication with host is interrupted at 115200 baud
 // as avrdude on next start will try to communicate at 19200 baud. Reset is required to fix this.
@@ -515,6 +528,7 @@ namespace SYS {
   void setPOWER(void);
   void clearPOWER(void);
   void cyclePOWER(void);
+  uint16_t checkVTG(void);
   void checkOVERLOAD(void);
   uint8_t checkHVMODE();
 }

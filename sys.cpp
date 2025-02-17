@@ -69,10 +69,27 @@ void SYS::init(void) {
   #endif
   #if defined(USE_HV_PROGRAMMING)
   #if defined(__AVR_ATmega328P__)
+  #if defined(HVUPDI2)
+  // PB 5,4,3,2,1,0: SCK, HVPWR, none, none, none, HVLED
+  DDRB |=   0b110001;        // configure SCK, HVPWR and HVLED as outputs
+  PORTB &= ~0b110001;        // outputs 0
+  // PC 5,4,3,2,1,0 except ADCPIN_gc: VTG
+  PORTC &= (1 << ADCPIN_gc); // disable VTG pullup
+  DDRC |= ~(1 << ADCPIN_gc); // set VTG as outputs
+  PORTC &= (1 << ADCPIN_gc); // target power off: VTG = 0
+  // PD 7,6,5,4,3,2,1,0: LED2(reserved),UPDI,none,none,none,none,TXD,RXD
+  DDRD |=   0b10000000;      // set LED2 as output
+  // ADC
+  ADCSRA = (1 << ADEN);      // turn ADC on
+  ADCSRA |= (1 << ADPS1) | (1 << ADPS2);           // prescaler of 64 (16MHz / 64 = 250kHz)
+  ADMUX = (1 << REFS0) | (1 << ADLAR) | ADCPIN_gc; // AVcc reference, 8-bit result, select ADCPIN_gc
+  DIDR0 |= (1 << ADCPIN_gc); // disable digital input buffer if exists on ADCPIN_gc
+  #else // !defined(HVUPDI2)
   // Dickson charge pump - Bit 4,3,2,1,0: HVPWR4 Power, HVSD3 Shutdown, HVCP2 Clock, HVCP1 Clock, HVLED
   DDRB |=   0b00011111;      // configure HVPWR4, HVSD3, HVCP2, HVCP1, HVLED as outputs
   PORTB &= ~0b00011110;      // clear HVPWR4, HVSD3, HVCP2, HVCP1
   PORTB |=  0b00001000;      // set HVSD3
+  #endif // HVUPDI2
 
   #elif defined(__AVR_ATtiny_Zero_One__)
   // Output Pins
@@ -126,6 +143,24 @@ void SYS::clearHVLED(void){
   #endif
 }
 
+#if defined(HVUPDI2)
+void SYS::pulseHV(void) {
+  SYS::setHVLED();
+  SYS::clearPOWER();      // confirm \overline{RESET}
+  _delay_ms(150);
+  #if defined(__AVR_ATmega328P__)
+  // PC 5,4,3,2,1,0 except ADCPIN_gc: VTG
+  PORTC |= ~(1 << ADCPIN_gc);   // target power on: VTG = 1
+  while (SYS::checkVTG() < 93); // 1.8V
+  // PB 5,4,3,2,1,0: SCK, HVPWR, none, none, none, HVLED
+  PORTB |=  0b010000;     // inject 12V on UPDI
+  _delay_us(200);
+  PORTB &= ~0b010000;     // stop 12V
+  #endif
+  SYS::updiTriState();
+  SYS::clearHVLED();
+}
+#else // !defined(HVUPDI2)
 void SYS::pulseHV(void) {
   #if defined(USE_HV_PROGRAMMING)
    SYS::setHVLED();
@@ -191,12 +226,13 @@ void SYS::pulseHV(void) {
   SYS::clearHVLED();
   #endif
 }
+#endif // HVUPDI2
 
 void SYS::updiTriState(void) {
   #if defined(USE_HV_PROGRAMMING)
 #if defined(__AVR_ATmega328P__)
   DDRD  &= ~0b01000000; // UPDI rx enable
-  PORTD &= ~0b01000000; // low
+  PORTD &= ~0b01000000; // UPDI pullup disabled
 #elif defined(__AVR_ATtiny_Zero_One__)
   PORTB.DIRCLR = PIN0_bm; // UPDI rx enable
   PORTB.PIN0CTRL &= ~PORT_PULLUPEN_bm; // UPDI pullup disabled
@@ -273,6 +309,11 @@ void SYS::updiEnable(void) {
   #endif
 }
 
+#if defined(HVUPDI2)
+void SYS::setPOWER(void) {
+    // do nothing
+}
+#else // !defined(HVUPDI2)
 void SYS::setPOWER(void) {
   #if defined(USE_HV_PROGRAMMING)
 #if defined(__AVR_ATmega328P__)
@@ -286,12 +327,18 @@ void SYS::setPOWER(void) {
   _delay_us(10);
   #endif
 }
+#endif // HVUPDI2
 
 void SYS::clearPOWER(void) {
   #if defined(USE_HV_PROGRAMMING)
 #if defined(__AVR_ATmega328P__)
+#if defined(HVUPDI2)
+  PORTC &= (1 << ADCPIN_gc);   // VTG = 0;
+  while (SYS::checkVTG() > 2); // confirm VTG < 39mV
+#else // !defined(HVUPDI2)
   DDRC &= 0b11000000;  // disable pullups
   PORTC &= 0b11000000; // set as inputs
+#endif // HVUPDI2
 #elif defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
   PORTA.OUTCLR = PIN2_bm; // power switch low
 #elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
@@ -308,7 +355,20 @@ void SYS::cyclePOWER(void) {
   #endif
 }
 
+uint16_t SYS::checkVTG(void) {
+#if defined(HVUPDI2)
+  ADCSRA  |= (1 << ADSC);                        // start a conversion
+  while (ADCSRA & (1 << ADSC));                  // wait while busy
+  return ADCH;
+#endif // defined(HVUPDI2)
+}
+
 void SYS::checkOVERLOAD(void) {                      // Use A6 to sense overload on A0-A5 (target power)
+#if defined(HVUPDI2)
+  uint16_t sum = 0;
+  for (int i = 0 ; i < 250 ; i++)
+    sum += SYS::checkVTG();
+#else // !defined(HVUPDI2)
   #if defined(USE_HV_PROGRAMMING)
 #if defined(__AVR_ATmega328P__)                      // Arduino Nano
   ADCSRA = (1 << ADEN);                              // turn ADC on
@@ -333,6 +393,7 @@ void SYS::checkOVERLOAD(void) {                      // Use A6 to sense overload
     sum += ADC0_RESL;                                // totalize ADC result
   }
 # endif
+#endif // HVUPDI2
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
   if ((sum / 250) <= 230) {                          // if voltage on shorted A0-A5 outputs <= 4.5V
     while (1) {                                      // OVERLOAD (fix circuit then press Reset)
@@ -348,6 +409,9 @@ void SYS::checkOVERLOAD(void) {                      // Use A6 to sense overload
 }
 
 uint8_t SYS::checkHVMODE() {                         // Check HV Programming Mode Switch
+#if defined(HVUPDI2)
+  return 255;                                        // always PCHV
+#else // !defined(HVUPDI2)
   #if defined(USE_HV_PROGRAMMING)
 #if defined(__AVR_ATmega328P__)                      // Arduino Nano
   ADCSRA =  (1 << ADEN);                             // turn ADC on
@@ -378,4 +442,5 @@ uint8_t SYS::checkHVMODE() {                         // Check HV Programming Mod
   return 0;
 # endif
   #endif
+#endif // HVUPDI2
 }

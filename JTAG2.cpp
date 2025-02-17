@@ -242,6 +242,10 @@ void JTAG2::enter_progmode() {
       include_extra_info( (nvm_version == 2) ? 15 : 9 );
       break;
     default:
+    #if defined(HVUPDI2)
+      set_status(RSP_OK); // in order to avoid unnecessary warning message at start up when the status is not available
+      break;
+    #endif // HVUPDI2
       // If we're somehow NOT in programming mode now, that's no good - inform host of this unfortunate state of affairs
       packet.body[0] = RSP_ILLEGAL_MCU_STATE;
       packet.body[1] = system_status; // return whatever system status caused this error
